@@ -3,7 +3,7 @@
 # \file configure.ac
 # \brief Main file for configuring the autoconf/automake build process
 # \author M. Colonno, T. Economon, F. Palacios, B. Kirk
-# \version 4.0.2 "Cardinal"
+# \version 4.2.0 "Cardinal"
 #
 # SU2 Lead Developers: Dr. Francisco Palacios (Francisco.D.Palacios@boeing.com).
 #                      Dr. Thomas D. Economon (economon@stanford.edu).
@@ -14,7 +14,7 @@
 #                 Prof. Alberto Guardone's group at Polytechnic University of Milan.
 #                 Prof. Rafael Palacios' group at Imperial College London.
 #
-# Copyright (C) 2012-2015 SU2, the open-source CFD code.
+# Copyright (C) 2012-2016 SU2, the open-source CFD code.
 #
 # SU2 is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -35,10 +35,9 @@
 # METIS & TECIO integration added by Ben Kirk, 3/24/2014
 # LAPACK connection added by Teus van der Stelt, 11/13/2014
 # ParMETIS integration added by Ben Kirk & Thomas D. Economon, 2/3/2015
-#
-################################################################################
+##########################
 
-AC_INIT([SU2], [4.0.2], [su2code-dev@lists.stanford.edu],
+AC_INIT([SU2], [4.2.0], [su2code-dev@lists.stanford.edu],
         [SU2], [https://github.com/su2code])
 AC_PREREQ([2.59])
 AC_CONFIG_MACRO_DIR([m4])
@@ -51,6 +50,8 @@ SU2_SET_COMPILERS
 AM_PROG_CC_C_O
 AC_PROG_RANLIB
 AC_PROG_MKDIR_P
+AC_PROG_CXX
+
 #PKG_PROG_PKG_CONFIG
 
 # --------------------------------------------------------------
@@ -129,9 +130,6 @@ AC_ARG_ENABLE(SOL,
 AC_ARG_ENABLE(GEO,
    	AS_HELP_STRING([--disable-GEO], [build the SU2_GEO executable (default = yes)]),
 	[build_GEO=$enableval], [build_GEO="yes"])
-AC_ARG_ENABLE(API,
-   	AS_HELP_STRING([--disable-API], [build the SU2_API wrapper (default = yes)]),
-	[build_API=$enableval], [build_API="yes"])
 AC_ARG_ENABLE(complex,
     AS_HELP_STRING([--enable-complex], [build executables with complex datatype (default = no)]),
     [build_COMPLEX="yes"], [build_COMPLEX="no"])
@@ -553,7 +551,6 @@ AM_CONDITIONAL([BUILD_MSH],[test $build_MSH != "no"])
 AM_CONDITIONAL([BUILD_DEF],[test $build_DEF != "no"])
 AM_CONDITIONAL([BUILD_SOL],[test $build_SOL != "no"])
 AM_CONDITIONAL([BUILD_GEO],[test $build_GEO != "no"])
-AM_CONDITIONAL([BUILD_API],[test $build_API != "no"])
 
 ###########################
 
@@ -561,7 +558,6 @@ AC_OUTPUT(Makefile \
         externals/Makefile \
 	Common/lib/Makefile \
 	SU2_CFD/obj/Makefile \
-        SU2_API/obj/Makefile \
 	SU2_DOT/obj/Makefile \
 	SU2_MSH/obj/Makefile \
 	SU2_DEF/obj/Makefile \
@@ -577,7 +573,7 @@ AC_MSG_RESULT([
 
 -------------------------------------------------------------------------
 |    ___ _   _ ___                                                      |
-|   / __| | | |_  )   Release 4.0.1 'Cardinal'                          |
+|   / __| | | |_  )   Release 4.2.0 'Cardinal'                          |
 |   \\__ \\ |_| |/ /                                                      |
 |   |___/\\___//___|   Suite                                             |
 |                                                                       |
@@ -592,7 +588,7 @@ AC_MSG_RESULT([
 | - Prof. Alberto Guardone's group at Polytechnic University of Milan.  |
 | - Prof. Rafael Palacios' group at Imperial College London.            |
 -------------------------------------------------------------------------
-| Copyright (C) 2012-2015 SU2, the open-source CFD code.                |
+| Copyright (C) 2012-2016 SU2, the open-source CFD code.                |
 |                                                                       |
 | SU2 is free software; you can redistribute it and/or                  |
 | modify it under the terms of the GNU Lesser General Public            |
@@ -644,7 +640,6 @@ Build Configuration Summary:
     Build SU2_DEF:        $build_DEF
     Build SU2_SOL:        $build_SOL
     Build SU2_GEO:        $build_GEO
-    Build SU2_API:	  $build_API
 
 Please be sure to add the [\$]SU2_HOME and [\$]SU2_RUN environment variables,
 and update your [\$]PATH (and [\$]PYTHONPATH if applicable) with [\$]SU2_RUN.

@@ -2,7 +2,7 @@
  * \file dual_grid_structure.cpp
  * \brief Main classes for defining the dual grid
  * \author F. Palacios, T. Economon
- * \version 4.0.2 "Cardinal"
+ * \version 4.2.0 "Cardinal"
  *
  * SU2 Lead Developers: Dr. Francisco Palacios (Francisco.D.Palacios@boeing.com).
  *                      Dr. Thomas D. Economon (economon@stanford.edu).
@@ -13,7 +13,7 @@
  *                 Prof. Alberto Guardone's group at Polytechnic University of Milan.
  *                 Prof. Rafael Palacios' group at Imperial College London.
  *
- * Copyright (C) 2012-2015 SU2, the open-source CFD code.
+ * Copyright (C) 2012-2016 SU2, the open-source CFD code.
  *
  * SU2 is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -313,13 +313,8 @@ CPoint::CPoint(su2double val_coord_0, su2double val_coord_1, su2double val_coord
 
 CPoint::~CPoint() {
   
-	Elem.~vector();
-	Point.~vector();
-	Edge.~vector();
-  Children_CV.~vector();
-
 	if (Volume != NULL) delete[] Volume;
-	if (Vertex != NULL) delete[] Vertex;
+	if (Vertex != NULL && Boundary) delete[] Vertex;
 	if (Coord != NULL) delete[] Coord;
 	if (Coord_Old != NULL) delete[] Coord_Old;
 	if (Coord_Sum != NULL) delete[] Coord_Sum;
@@ -423,6 +418,12 @@ su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_Fa
 	unsigned short iDim;
   su2double vec_a[3] = {0.0,0.0,0.0}, vec_b[3] = {0.0,0.0,0.0}, vec_c[3] = {0.0,0.0,0.0}, vec_d[3] = {0.0,0.0,0.0}, Local_Volume;
 
+  AD::StartPreacc();
+  AD::SetPreaccIn(val_coord_Edge_CG, nDim);
+  AD::SetPreaccIn(val_coord_Elem_CG, nDim);
+  AD::SetPreaccIn(val_coord_FaceElem_CG, nDim);
+  AD::SetPreaccIn(val_coord_Point, nDim);
+
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Edge_CG[iDim]-val_coord_Point[iDim];
 		vec_b[iDim] = val_coord_FaceElem_CG[iDim]-val_coord_Point[iDim];
@@ -435,12 +436,21 @@ su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_Fa
 
 	Local_Volume = fabs(vec_c[0]*vec_d[0] + vec_c[1]*vec_d[1] + vec_c[2]*vec_d[2])/6.0;
 	
+  AD::SetPreaccOut(Local_Volume);
+  AD::EndPreacc();
+
 	return Local_Volume;
 }
 
 su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_Elem_CG, su2double *val_coord_Point) {
 	unsigned short iDim;
 	su2double vec_a[2] = {0.0,0.0}, vec_b[2] = {0.0,0.0}, Local_Volume;
+
+  AD::StartPreacc();
+  AD::SetPreaccIn(val_coord_Edge_CG, nDim);
+  AD::SetPreaccIn(val_coord_Elem_CG, nDim);
+  AD::SetPreaccIn(val_coord_Point, nDim);
+
 
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Elem_CG[iDim]-val_coord_Point[iDim];
@@ -449,12 +459,21 @@ su2double CEdge::GetVolume(su2double *val_coord_Edge_CG, su2double *val_coord_El
 
 	Local_Volume = 0.5*fabs(vec_a[0]*vec_b[1]-vec_a[1]*vec_b[0]);
 	
+  AD::SetPreaccOut(Local_Volume);
+  AD::EndPreacc();
+
 	return Local_Volume;
 }
 
 void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_FaceElem_CG, su2double *val_coord_Elem_CG) {
 	unsigned short iDim;
 	su2double vec_a[3] = {0.0,0.0,0.0}, vec_b[3] = {0.0,0.0,0.0}, Dim_Normal[3];
+
+  AD::StartPreacc();
+  AD::SetPreaccIn(val_coord_Edge_CG, nDim);
+  AD::SetPreaccIn(val_coord_Elem_CG, nDim);
+  AD::SetPreaccIn(val_coord_FaceElem_CG, nDim);
+  AD::SetPreaccIn(Normal, nDim);
 
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Elem_CG[iDim]-val_coord_Edge_CG[iDim];
@@ -469,10 +488,17 @@ void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_Fa
 	Normal[1] += Dim_Normal[1];		
 	Normal[2] += Dim_Normal[2];
   
+  AD::SetPreaccOut(Normal, nDim);
+  AD::EndPreacc();
 }
 
 void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_Elem_CG) {
 	su2double Dim_Normal[2];
+
+  AD::StartPreacc();
+  AD::SetPreaccIn(val_coord_Elem_CG, nDim);
+  AD::SetPreaccIn(val_coord_Edge_CG, nDim);
+  AD::SetPreaccIn(Normal, nDim);
 
 	Dim_Normal[0] = val_coord_Elem_CG[1]-val_coord_Edge_CG[1];
 	Dim_Normal[1] = -(val_coord_Elem_CG[0]-val_coord_Edge_CG[0]);
@@ -480,6 +506,8 @@ void CEdge::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_El
 	Normal[0] += Dim_Normal[0]; 
 	Normal[1] += Dim_Normal[1];
   
+  AD::SetPreaccOut(Normal, nDim);
+  AD::EndPreacc();
 }
 
 CVertex::CVertex(unsigned long val_point, unsigned short val_nDim) : CDualGrid(val_nDim) {
@@ -504,18 +532,41 @@ CVertex::CVertex(unsigned long val_point, unsigned short val_nDim) : CDualGrid(v
   
 	VarCoord[0] = 0.0; VarCoord[1] = 0.0; VarCoord[2] = 0.0;
 
+	/*--- Set to NULL variation of the rotation  ---*/
+	VarRot = NULL;
+
+	/*--- Set to NULL donor arrays for interpolation ---*/
+  	Donor_Points = NULL;
+  	Donor_Proc = NULL;
+  	Donor_Coeff = NULL;
+  	nDonor_Points = 1;
 }
 
 CVertex::~CVertex() {
   
 	if (Normal != NULL) delete[] Normal;
 	if (Nodes != NULL) delete[] Nodes;
-  
+
+  /*---  donor arrays for interpolation ---*/
+  if (Donor_Coeff != NULL) delete[] Donor_Coeff;
+  if (Donor_Proc != NULL) delete[] Donor_Proc;
+  if (Donor_Points != NULL) delete[] Donor_Points;
+
+  if (VarRot!=NULL)
+    delete[] VarRot;
+
+
 }
 
 void CVertex::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_FaceElem_CG, su2double *val_coord_Elem_CG) {
   su2double vec_a[3] = {0.0,0.0,0.0}, vec_b[3] = {0.0,0.0,0.0}, Dim_Normal[3] = {0.0,0.0,0.0};
 	unsigned short iDim;
+
+  AD::StartPreacc();
+  AD::SetPreaccIn(val_coord_Edge_CG, nDim);
+  AD::SetPreaccIn(val_coord_Elem_CG, nDim);
+  AD::SetPreaccIn(val_coord_FaceElem_CG, nDim);
+  AD::SetPreaccIn(Normal, nDim);
 
 	for (iDim = 0; iDim < nDim; iDim++) {
 		vec_a[iDim] = val_coord_Elem_CG[iDim]-val_coord_Edge_CG[iDim];
@@ -530,16 +581,27 @@ void CVertex::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_
 	Normal[1] += Dim_Normal[1];	
 	Normal[2] += Dim_Normal[2];
   
+  AD::SetPreaccOut(Normal, nDim);
+  AD::EndPreacc();
+
 }
 
 void CVertex::SetNodes_Coord(su2double *val_coord_Edge_CG, su2double *val_coord_Elem_CG) {
 	su2double Dim_Normal[2];
+
+  AD::StartPreacc();
+  AD::SetPreaccIn(val_coord_Elem_CG, nDim);
+  AD::SetPreaccIn(val_coord_Edge_CG, nDim);
+  AD::SetPreaccIn(Normal, nDim);
 
 	Dim_Normal[0] = val_coord_Elem_CG[1]-val_coord_Edge_CG[1];
 	Dim_Normal[1] = -(val_coord_Elem_CG[0]-val_coord_Edge_CG[0]);
 
 	Normal[0] += Dim_Normal[0]; 
 	Normal[1] += Dim_Normal[1];
+
+  AD::SetPreaccOut(Normal, nDim);
+  AD::EndPreacc();
   
 }
 
@@ -548,4 +610,10 @@ void CVertex::AddNormal(su2double *val_face_normal) {
 	Normal[0] += val_face_normal[0]; 
 	Normal[1] += val_face_normal[1];
 	if (nDim == 3) Normal[2] += val_face_normal[2];
+}
+
+void CVertex::Allocate_DonorInfo(void){
+  Donor_Points = new unsigned long[nDonor_Points];
+  Donor_Proc = new unsigned long[nDonor_Points];
+  Donor_Coeff = new su2double[nDonor_Points];
 }

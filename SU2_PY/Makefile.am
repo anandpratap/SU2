@@ -3,7 +3,7 @@
 # \file Makefile.am
 # \brief Makefile for the SU2 Python framework
 # \author M. Colonno, T. Economon, F. Palacios, T. Lukaczyk
-# \version 4.0.2 "Cardinal"
+# \version 4.2.0 "Cardinal"
 #
 # SU2 Lead Developers: Dr. Francisco Palacios (Francisco.D.Palacios@boeing.com).
 #                      Dr. Thomas D. Economon (economon@stanford.edu).
@@ -14,7 +14,7 @@
 #                 Prof. Alberto Guardone's group at Polytechnic University of Milan.
 #                 Prof. Rafael Palacios' group at Imperial College London.
 #
-# Copyright (C) 2012-2015 SU2, the open-source CFD code.
+# Copyright (C) 2012-2016 SU2, the open-source CFD code.
 #
 # SU2 is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ bin_SCRIPTS = \
     finite_differences.py \
     mesh_deformation.py \
     parallel_computation.py \
+    parallel_computation_fsi.py \
     package_tests.py \
     patient_designspace.py \
     shape_optimization.py \
@@ -43,8 +44,7 @@ bin_SCRIPTS = \
     set_ffd_design_var.py \
     compute_polar.py \
     discrete_adjoint.py \
-    direct_differentiation.py \
-    LaunchFSIComputation.py
+    direct_differentiation.py
 
 
 mypkgdir = $(prefix)/bin
@@ -89,16 +89,6 @@ nobase_dist_mypkg_DATA= \
     SU2/util/pyCppTap.py \
     SU2/util/switch.py \
     SU2/util/which.py \
-    SU2/util/__init__.py \
-    FSI/__init__.py \
-    FSI/eval/__init__.py \
-    FSI/io/__init__.py \
-    FSI/io/FSI_config.py \
-    FSI/io/MPIComm.py \
-    FSI/run/__init__.py \
-    FSI/run/SteadyFSI.py \
-    FSI/run/UnsteadyFSI.py \
-    FSI/util/__init__.py \
-    FSI/util/switch.py
+    SU2/util/__init__.py
 
 EXTRA_DIST = $(bin_SCRIPTS)
