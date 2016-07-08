@@ -33,7 +33,7 @@
 
 CDriver::CDriver(char* confFile,
                  unsigned short val_nZone,
-                 unsigned short val_nDim):config_file_name(confFile), ExtIter(0), StartTime(0.0), StopTime(0.0), UsedTime(0.0), nZone(val_nZone), nDim(val_nDim), fsi(false), StopCalc(false){
+                 unsigned short val_nDim):config_file_name(confFile), StartTime(0.0), StopTime(0.0), UsedTime(0.0), ExtIter(0), nZone(val_nZone), nDim(val_nDim), StopCalc(false), fsi(false){
 
 
   unsigned short jZone, iSol;
@@ -2267,11 +2267,9 @@ void CDriver::Interface_Preprocessing(CTransfer ***transfer_container, CInterpol
 void CDriver::StartSolver(){
 
     int rank = MASTER_NODE;
-    int size = SINGLE_NODE;
 
 #ifdef HAVE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif // HAVE_MPI
 
     /*--- Main external loop of the solver. Within this loop, each iteration ---*/
@@ -2434,11 +2432,9 @@ void CDriver::Output(){
 
 
     int rank = MASTER_NODE;
-    int size = SINGLE_NODE;
 
 #ifdef HAVE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif // HAVE_MPI
 
 
@@ -2567,7 +2563,7 @@ double CDriver::outputFluidLoads_Mz(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
-  su2double CLift, CDrag, CMz, RefDensity, RefAreaCoeff, RefLengthCoeff, RefVel2(0.0), factor;
+  su2double CMz, RefDensity, RefAreaCoeff, RefLengthCoeff, RefVel2(0.0), factor;
 
   /*--- Export free-stream density and reference area ---*/
   RefDensity = solver_container[val_iZone][FinestMesh][FLOW_SOL]->GetDensity_Inf();
@@ -2588,16 +2584,8 @@ double CDriver::outputFluidLoads_Mz(){
 
 unsigned short CDriver::getFSIMarkerID(){
 
-  int rank = MASTER_NODE;
-  int size = 1;
-
-  unsigned short IDtoSend,iMarker, jMarker, Moving;
+  unsigned short IDtoSend(0),iMarker, jMarker, Moving;
   string Marker_Tag, Moving_Tag;
-
-#ifdef HAVE_MPI
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-#endif
 
   for (iMarker = 0; iMarker < config_container[ZONE_0]->GetnMarker_All(); iMarker++) {
     Moving = config_container[ZONE_0]->GetMarker_All_Moving(iMarker);
@@ -2619,17 +2607,9 @@ unsigned short CDriver::getFSIMarkerID(){
 
 unsigned long CDriver::getNumberOfFluidInterfaceNodes(unsigned short iMarker){
 
-  int rank = MASTER_NODE;
-  int size = 1;
-
-  unsigned long nFluidVertex, iVertex, iPoint;
+  unsigned long nFluidVertex;
   unsigned short jMarker, Moving;
   string Marker_Tag, Moving_Tag;
-
-#ifdef HAVE_MPI
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-#endif
 
   nFluidVertex = 0;
 
@@ -2643,8 +2623,6 @@ unsigned long CDriver::getNumberOfFluidInterfaceNodes(unsigned short iMarker){
       }
     }
   }
-
-  //cout << "Message from process " << rank << " : there are " << nFluidVertex << " nodes on the moving fluid interface." << endl;
 
   return nFluidVertex;
 
@@ -2702,15 +2680,7 @@ double CDriver::getInterfaceNodePosZ(unsigned short iMarker, unsigned short iVer
 
 bool CDriver::computeInterfaceNodalForce(unsigned short iMarker, unsigned short iVertex){
 
-    int rank = MASTER_NODE;
-    int size = 1;
-
-#ifdef HAVE_MPI
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-#endif
-
-    unsigned long iPoint, GlobalIndex;
+    unsigned long iPoint;
     unsigned short iDim, jDim;
     su2double *Normal, AreaSquare, Area;
     bool halo;
@@ -2740,8 +2710,9 @@ bool CDriver::computeInterfaceNodalForce(unsigned short iMarker, unsigned short 
 	su2double Pinf = solver_container[ZONE_0][FinestMesh][FLOW_SOL]->GetPressure_Inf();
 
     iPoint = geometry_container[ZONE_0][MESH_0]->vertex[iMarker][iVertex]->GetNode();
-    GlobalIndex = geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetGlobalIndex();
-    /*--- It necessary to distinguish the halo nodes from the others, since they introduice non physical forces. The halo nodes are marked with a global index equal to -1 ---*/
+    //GlobalIndex = geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetGlobalIndex();
+
+    /*--- It necessary to distinguish the halo nodes from the others, since they introduice non physical forces. ---*/
     //if(geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetDomain()) partFluidSurfaceLoads[iVertex][0] = GlobalIndex;
     //else partFluidSurfaceLoads[iVertex][0] = -1.0;
     if(geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetDomain()){
@@ -2810,7 +2781,6 @@ bool CDriver::computeInterfaceNodalForce(unsigned short iMarker, unsigned short 
    }
    else{
         halo = true;
-        //cout << "JE SUIS HALO ON RANK " << rank << " ET MON INDEX EST : " << GlobalIndex << "ET J AI UNE FORCE DE " << APINodalForce[0] << ";" << APINodalForce[1] << ";" << APINodalForce[2] << endl;
    }
 
    return halo;
@@ -3006,11 +2976,9 @@ void CSingleZoneDriver::DynamicMeshUpdate(unsigned long ExtIter){
 void CSingleZoneDriver::StaticMeshUpdate(){
 
   int rank = MASTER_NODE;
-  int size = SINGLE_NODE;
 
 #ifdef HAVE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif
 
   if(rank == MASTER_NODE) cout << " Deforming the volume grid." << endl;
@@ -3140,11 +3108,9 @@ void CMultiZoneDriver::DynamicMeshUpdate(unsigned long ExtIter){
 void CMultiZoneDriver::StaticMeshUpdate(){
 
   int rank = MASTER_NODE;
-  int size = SINGLE_NODE;
 
 #ifdef HAVE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif
 
   for(iZone = 0; iZone < nZone; iZone++){
