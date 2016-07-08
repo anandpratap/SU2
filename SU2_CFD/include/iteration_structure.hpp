@@ -56,19 +56,24 @@ using namespace std;
 class CIteration {
 protected:
   unsigned short nZone;	/*!< \brief Total number of zones in the problem. */
-  
+
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    */
   CIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   virtual ~CIteration(void);
-  
+
+  virtual void SetGrid_Movement(CGeometry ***geometry_container, CSurfaceMovement **surface_movement,
+                      CVolumetricMovement **grid_movement, CFreeFormDefBox ***FFDBox,
+                      CSolver ****solver_container, CConfig **config_container,
+                      unsigned short val_iZone, unsigned long IntIter, unsigned long ExtIter);
+
   /*!
    * \brief A virtual member.
    * \param[in] ??? - Description here.
@@ -83,7 +88,7 @@ public:
                           CVolumetricMovement **grid_movement,
                           CFreeFormDefBox*** FFDBox,
                           unsigned short val_iZone);
-  
+
   /*!
    * \brief A virtual member.
    * \param[in] output - Pointer to the COutput class.
@@ -106,7 +111,7 @@ public:
                        CVolumetricMovement **grid_movement,
                        CFreeFormDefBox*** FFDBox,
                        unsigned short val_iZone);
-  
+
   /*!
    * \brief A virtual member.
    * \param[in] ??? - Description here.
@@ -121,19 +126,19 @@ public:
                       CVolumetricMovement **grid_movement,
                       CFreeFormDefBox*** FFDBox,
                       unsigned short val_iZone);
-  
+
   /*!
    * \brief A virtual member.
    * \param[in] ??? - Description here.
    */
   virtual void Monitor();
-  
+
   /*!
    * \brief A virtual member.
    * \param[in] ??? - Description here.
    */
   virtual void Output();
-  
+
   /*!
    * \brief A virtual member.
    * \param[in] ??? - Description here.
@@ -151,18 +156,18 @@ public:
  */
 class CMeanFlowIteration : public CIteration {
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    * \param[in] config - Definition of the particular problem.
    */
   CMeanFlowIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   ~CMeanFlowIteration(void);
-  
+
   /*!
    * \brief Preprocessing to prepare for an iteration of the physics.
    * \param[in] ??? - Description here.
@@ -177,7 +182,7 @@ public:
                   CVolumetricMovement **grid_movement,
                   CFreeFormDefBox*** FFDBox,
                   unsigned short val_iZone);
-  
+
   /*!
    * \brief Perform a single iteration of the mean flow system.
    * \param[in] output - Pointer to the COutput class.
@@ -200,7 +205,7 @@ public:
                CVolumetricMovement **grid_movement,
                CFreeFormDefBox*** FFDBox,
                unsigned short val_iZone);
-  
+
   /*!
    * \brief Updates the containers for the mean flow system.
    * \param[in] ??? - Description here.
@@ -215,25 +220,25 @@ public:
               CVolumetricMovement **grid_movement,
               CFreeFormDefBox*** FFDBox,
               unsigned short val_iZone);
-  
+
   /*!
    * \brief Monitors the convergence and other metrics for the mean flow system.
    * \param[in] ??? - Description here.
    */
   void Monitor();
-  
+
   /*!
    * \brief Outputs desired files and quantities for the mean flow system.
    * \param[in] ??? - Description here.
    */
   void Output();
-  
+
   /*!
    * \brief Postprocesses the mean flow system before heading to another physics system or the next iteration.
    * \param[in] ??? - Description here.
    */
   void Postprocess();
-  
+
   /*!
    * \brief Imposes a gust via the grid velocities.
    * \author S. Padron
@@ -242,7 +247,7 @@ public:
    * \param[in] solver_container - Container vector with all the solutions.
    */
   void SetWind_GustField(CConfig *config_container, CGeometry **geometry_container, CSolver ***solver_container);
-  
+
   /*!
    * \brief Reads and initializes the vortex positions, strengths and gradient.
    * \author S. Padron
@@ -253,7 +258,7 @@ public:
    * \param[in] r_core - Vector of vortex core size.
    */
   void InitializeVortexDistribution(unsigned long &nVortex, vector<su2double>& x0, vector<su2double>& y0, vector<su2double>& vort_strength, vector<su2double>& r_core);
-  
+
   /*!
    * \brief compute and set mixing-plane quantities at the interface between two adjacent zone.
    * \author S. Vitale
@@ -286,18 +291,18 @@ public:
  */
 class CWaveIteration : public CIteration {
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    * \param[in] config - Definition of the particular problem.
    */
   CWaveIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   ~CWaveIteration(void);
-  
+
   /*!
    * \brief Preprocessing to prepare for an iteration of the physics.
    * \param[in] output - Pointer to the COutput class.
@@ -321,7 +326,7 @@ public:
                   CVolumetricMovement **grid_movement,
                   CFreeFormDefBox*** FFDBox,
                   unsigned short val_iZone);
-  
+
   /*!
    * \brief Perform a single iteration of the wave system.
    * \param[in] output - Pointer to the COutput class.
@@ -369,22 +374,22 @@ public:
               CVolumetricMovement **grid_movement,
               CFreeFormDefBox*** FFDBox,
               unsigned short val_iZone);
-  
+
   /*!
    * \brief Monitors the convergence and other metrics for the wave system.
    */
   void Monitor();
-  
+
   /*!
    * \brief Outputs desired files and quantities for the wave system.
    */
   void Output();
-  
+
   /*!
    * \brief Postprocesses the wave system before heading to another physics system or the next iteration.
    */
   void Postprocess();
-  
+
 };
 
 /*!
@@ -395,18 +400,18 @@ public:
  */
 class CHeatIteration : public CIteration {
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    * \param[in] config - Definition of the particular problem.
    */
   CHeatIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   ~CHeatIteration(void);
-  
+
   /*!
    * \brief Preprocessing to prepare for an iteration of the physics.
    * \param[in] ??? - Description here.
@@ -421,7 +426,7 @@ public:
                   CVolumetricMovement **grid_movement,
                   CFreeFormDefBox*** FFDBox,
                   unsigned short val_iZone);
-  
+
   /*!
    * \brief Perform a single iteration of the heat system.
    * \param[in] output - Pointer to the COutput class.
@@ -459,25 +464,25 @@ public:
               CVolumetricMovement **grid_movement,
               CFreeFormDefBox*** FFDBox,
               unsigned short val_iZone);
-  
+
   /*!
    * \brief Monitors the convergence and other metrics for the heat system.
    * \param[in] ??? - Description here.
    */
   void Monitor();
-  
+
   /*!
    * \brief Outputs desired files and quantities for the heat system.
    * \param[in] ??? - Description here.
    */
   void Output();
-  
+
   /*!
    * \brief Postprocesses the heat system before heading to another physics system or the next iteration.
    * \param[in] ??? - Description here.
    */
   void Postprocess();
-  
+
 };
 
 /*!
@@ -488,18 +493,18 @@ public:
  */
 class CPoissonIteration : public CIteration {
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    * \param[in] config - Definition of the particular problem.
    */
   CPoissonIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   ~CPoissonIteration(void);
-  
+
   /*!
    * \brief Preprocessing to prepare for an iteration of the physics.
    * \param[in] ??? - Description here.
@@ -514,7 +519,7 @@ public:
                   CVolumetricMovement **grid_movement,
                   CFreeFormDefBox*** FFDBox,
                   unsigned short val_iZone);
-  
+
   /*!
    * \brief Perform a single iteration of the poisson system.
    * \param[in] output - Pointer to the COutput class.
@@ -552,25 +557,25 @@ public:
               CVolumetricMovement **grid_movement,
               CFreeFormDefBox*** FFDBox,
               unsigned short val_iZone);
-  
+
   /*!
    * \brief Monitors the convergence and other metrics for the poisson system.
    * \param[in] ??? - Description here.
    */
   void Monitor();
-  
+
   /*!
    * \brief Outputs desired files and quantities for the poisson system.
    * \param[in] ??? - Description here.
    */
   void Output();
-  
+
   /*!
    * \brief Postprocesses the poisson system before heading to another physics system or the next iteration.
    * \param[in] ??? - Description here.
    */
   void Postprocess();
-  
+
 };
 
 /*!
@@ -668,18 +673,18 @@ public:
  */
 class CAdjMeanFlowIteration : public CIteration {
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    * \param[in] config - Definition of the particular problem.
    */
   CAdjMeanFlowIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   ~CAdjMeanFlowIteration(void);
-  
+
   /*!
    * \brief Preprocessing to prepare for an iteration of the physics.
    * \param[in] ??? - Description here.
@@ -694,7 +699,7 @@ public:
                   CVolumetricMovement **grid_movement,
                   CFreeFormDefBox*** FFDBox,
                   unsigned short val_iZone);
-  
+
   /*!
    * \brief Perform a single iteration of the adjoint mean flow system.
    * \param[in] output - Pointer to the COutput class.
@@ -717,7 +722,7 @@ public:
                CVolumetricMovement **grid_movement,
                CFreeFormDefBox*** FFDBox,
                unsigned short val_iZone);
-  
+
   /*!
    * \brief Updates the containers for the adjoint mean flow system.
    * \param[in] ??? - Description here.
@@ -732,25 +737,25 @@ public:
               CVolumetricMovement **grid_movement,
               CFreeFormDefBox*** FFDBox,
               unsigned short val_iZone);
-  
+
   /*!
    * \brief Monitors the convergence and other metrics for the adjoint mean flow system.
    * \param[in] ??? - Description here.
    */
   void Monitor();
-  
+
   /*!
    * \brief Outputs desired files and quantities for the adjoint mean flow system.
    * \param[in] ??? - Description here.
    */
   void Output();
-  
+
   /*!
    * \brief Postprocesses the adjoint mean flow system before heading to another physics system or the next iteration.
    * \param[in] ??? - Description here.
    */
   void Postprocess();
-  
+
 };
 
 /*!
@@ -780,18 +785,18 @@ private:
 
 
 public:
-  
+
   /*!
    * \brief Constructor of the class.
    * \param[in] config - Definition of the particular problem.
    */
   CDiscAdjMeanFlowIteration(CConfig *config);
-  
+
   /*!
    * \brief Destructor of the class.
    */
   ~CDiscAdjMeanFlowIteration(void);
-  
+
   /*!
    * \brief Preprocessing to prepare for an iteration of the physics.
    * \param[in] ??? - Description here.
@@ -806,7 +811,7 @@ public:
                   CVolumetricMovement **grid_movement,
                   CFreeFormDefBox*** FFDBox,
                   unsigned short val_iZone);
-  
+
   /*!
    * \brief Perform a single iteration of the adjoint mean flow system.
    * \param[in] output - Pointer to the COutput class.
@@ -829,7 +834,7 @@ public:
                CVolumetricMovement **grid_movement,
                CFreeFormDefBox*** FFDBox,
                unsigned short val_iZone);
-  
+
   /*!
    * \brief Updates the containers for the discrete adjoint mean flow system.
    * \param[in] ??? - Description here.
@@ -844,24 +849,24 @@ public:
               CVolumetricMovement **grid_movement,
               CFreeFormDefBox*** FFDBox,
               unsigned short val_iZone);
-  
+
   /*!
    * \brief Monitors the convergence and other metrics for the discrete adjoint mean flow system.
    * \param[in] ??? - Description here.
    */
   void Monitor();
-  
+
   /*!
    * \brief Outputs desired files and quantities for the discrete adjoint mean flow system.
    * \param[in] ??? - Description here.
    */
   void Output();
-  
+
   /*!
    * \brief Postprocesses the discrete adjoint mean flow system before heading to another physics system or the next iteration.
    * \param[in] ??? - Description here.
    */
-  void Postprocess(); 
+  void Postprocess();
 
   /*!
    * \brief Registers all input variables of the mean flow iteration.
@@ -982,6 +987,6 @@ void FEM_StructuralIteration(COutput *output, CIntegration ***integration_contai
  * \param[in] IntIter - Current sudo time iteration number.
  * \param[in] ExtIter - Current physical time iteration number.
  */
-void SetGrid_Movement(CGeometry **geometry_container, CSurfaceMovement *surface_movement, 
-                      CVolumetricMovement *grid_movement, CFreeFormDefBox **FFDBox,
-                      CSolver ***solver_container, CConfig *config_container, unsigned short iZone, unsigned long IntIter, unsigned long ExtIter);
+//void SetGrid_Movement(CGeometry **geometry_container, CSurfaceMovement *surface_movement,
+  //                    CVolumetricMovement *grid_movement, CFreeFormDefBox **FFDBox,
+    //                  CSolver ***solver_container, CConfig *config_container, unsigned short iZone, unsigned long IntIter, unsigned long ExtIter);

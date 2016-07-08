@@ -53,7 +53,7 @@
 
 using namespace std;
 
-/*! 
+/*!
  * \brief Gets the number of zones in the mesh file.
  * \param[in] val_mesh_filename - Name of the file with the grid information.
  * \param[in] val_format - Format of the file with the grid information.
@@ -62,7 +62,7 @@ using namespace std;
  */
 unsigned short GetnZone(string val_mesh_filename, unsigned short val_format, CConfig *config);
 
-/*! 
+/*!
  * \brief Gets the number of dimensions in the mesh file
  * \param[in] val_mesh_filename - Name of the file with the grid information.
  * \param[in] val_format - Format of the file with the grid information.
@@ -76,26 +76,18 @@ unsigned short GetnDim(string val_mesh_filename, unsigned short val_format);
  * \param[in] config - Definition of the particular problem.
  * \param[in] nZone - Total number of zones in the problem.
  */
-void Driver_Preprocessing(CDriver **driver,
-    CIteration **iteration_container,
-    CSolver ****solver_container,
-    CGeometry ***geometry_container,
-    CIntegration ***integration_container,
-    CNumerics *****numerics_container,
-    CInterpolator ***interpolator_container,
-    CTransfer ***transfer_container,
-    CConfig **config,
-    unsigned short val_nZone,
-    unsigned short val_nDim);
+void Driver_Preprocessing(CDriver **driver, CConfig *config, char* config_file_name, unsigned short val_nZone,
+                          unsigned short val_nDim,
+                          bool fsi);
 
 
-/*! 
+/*!
  * \brief Do the geometrical preprocessing.
  * \param[in] geometry - Geometrical definition of the problem.
  * \param[in] config - Definition of the particular problem.
  * \param[in] val_nZone - Total number of zones.
  */
-void Geometrical_Preprocessing(CGeometry ***geometry, CConfig **config, unsigned short val_nZone);
+//void Geometrical_Preprocessing(CGeometry ***geometry, CConfig **config, unsigned short val_nZone);
 
 /*!
  * \brief Performs an analysis of the mesh partitions for distributed memory calculations.
