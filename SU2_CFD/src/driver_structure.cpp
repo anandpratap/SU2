@@ -2355,6 +2355,7 @@ void CDriver::PreprocessExtIter(unsigned long ExtIter){
       output->SetHeat_InverseDesign(solver_container[ZONE_0][MESH_0][FLOW_SOL],
                                     geometry_container[ZONE_0][MESH_0], config_container[ZONE_0], ExtIter);
 
+    /*--- Set the initial condition for EULER/N-S/RANS for a non FSI simulation ---*/
     if ( (!fsi) && ( (config_container[ZONE_0]->GetKind_Solver() ==  EULER) || (config_container[ZONE_0]->GetKind_Solver() ==  NAVIER_STOKES) || (config_container[ZONE_0]->GetKind_Solver() ==  RANS) ) ){
         for(iZone = 0; iZone < nZone; iZone++){
             solver_container[iZone][MESH_0][FLOW_SOL]->SetInitialCondition(geometry_container[iZone], solver_container[iZone], config_container[iZone], ExtIter);
@@ -2916,6 +2917,8 @@ void CSingleZoneDriver::Run() {
                                        solver_container, numerics_container, config_container,
                                        surface_movement, grid_movement, FFDBox, ZONE_0);
 
+  output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, ZONE_0);
+
 }
 
 void CSingleZoneDriver::Update(){
@@ -3037,6 +3040,8 @@ void CMultiZoneDriver::Run() {
     iteration_container[iZone]->Iterate(output, integration_container, geometry_container,
                                         solver_container, numerics_container, config_container,
                                         surface_movement, grid_movement, FFDBox, iZone);
+
+    output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, iZone);
 
   }
 
