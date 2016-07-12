@@ -2313,6 +2313,9 @@ void CDriver::StartSolver(){
 
         /*--- Run a single iteration of the problem (mean flow, wave, heat, ...). ---*/
         Run();
+        for(iZone = 0; iZone < nZone; iZone++){
+            //output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, iZone);
+        }
 
         /*--- Update the solution for dual time stepping strategy ---*/
         Update();
@@ -2368,7 +2371,7 @@ void CDriver::PreprocessExtIter(unsigned long ExtIter){
 
 }
 
-void CDriver::Monitor(){
+bool CDriver::Monitor(){
 
     /*--- Synchronization point after a single solver iteration. Compute the
      wall clock time required. ---*/
@@ -2426,6 +2429,8 @@ void CDriver::Monitor(){
       case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
         StopCalc = integration_container[ZONE_0][ADJFLOW_SOL]->GetConvergence(); break;
     }
+
+    return StopCalc;
 
 }
 
@@ -2917,7 +2922,10 @@ void CSingleZoneDriver::Run() {
                                        solver_container, numerics_container, config_container,
                                        surface_movement, grid_movement, FFDBox, ZONE_0);
 
-  output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, ZONE_0);
+  switch (config_container[ZONE_0]->GetKind_Solver()){
+      case EULER: case NAVIER_STOKES: case RANS:
+        output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, ZONE_0); break;
+  }
 
 }
 

@@ -281,7 +281,7 @@ public:
 
   void PreprocessExtIter(unsigned long ExtIter);
 
-  void Monitor();
+  bool Monitor();
 
   void Output();
 
