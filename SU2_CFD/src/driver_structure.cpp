@@ -181,7 +181,7 @@ CDriver::CDriver(char* confFile,
     if (rank == MASTER_NODE) cout << "A single zone driver has been instantiated." << endl;
   }
   else if (config_container[ZONE_0]->GetUnsteady_Simulation() == TIME_SPECTRAL){
-    if (rank == MASTER_NODE) cout << "A spectral method driver ha been instantiated." << endl;
+    if (rank == MASTER_NODE) cout << "A spectral method driver has been instantiated." << endl;
   }
   else if (nZone == 2 && fsi){
     if (rank == MASTER_NODE) cout << "A Fluid-Structure Interaction driver has been instantiated." << endl;
@@ -376,6 +376,14 @@ CDriver::CDriver(char* confFile,
   APINodalForceDensity[0] = 0.0;
   APINodalForceDensity[1] = 0.0;
   APINodalForceDensity[2] = 0.0;
+
+  /*--- Set up a timer for performance benchmarking (preprocessing time is not included) ---*/
+
+#ifndef HAVE_MPI
+  StartTime = su2double(clock())/su2double(CLOCKS_PER_SEC);
+#else
+  StartTime = MPI_Wtime();
+#endif
 
 }
 
@@ -2277,14 +2285,6 @@ void CDriver::StartSolver(){
   if (rank == MASTER_NODE)
     cout << endl <<"------------------------------ Begin Solver -----------------------------" << endl;
 
-  /*--- Set up a timer for performance benchmarking (preprocessing time is not included) ---*/
-
-#ifndef HAVE_MPI
-  StartTime = su2double(clock())/su2double(CLOCKS_PER_SEC);
-#else
-  StartTime = MPI_Wtime();
-#endif
-
   /*--- This is temporal and just to check. It will have to be added to the regular history file ---*/
 
   ofstream historyFile_FSI;
@@ -2313,9 +2313,6 @@ void CDriver::StartSolver(){
 
         /*--- Run a single iteration of the problem (mean flow, wave, heat, ...). ---*/
         Run();
-        for(iZone = 0; iZone < nZone; iZone++){
-            //output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, iZone);
-        }
 
         /*--- Update the solution for dual time stepping strategy ---*/
         Update();
@@ -2358,8 +2355,12 @@ void CDriver::PreprocessExtIter(unsigned long ExtIter){
       output->SetHeat_InverseDesign(solver_container[ZONE_0][MESH_0][FLOW_SOL],
                                     geometry_container[ZONE_0][MESH_0], config_container[ZONE_0], ExtIter);
 
-    /*--- Set the initial condition for EULER/N-S/RANS for a non FSI simulation ---*/
-    if ( (!fsi) && ( (config_container[ZONE_0]->GetKind_Solver() ==  EULER) || (config_container[ZONE_0]->GetKind_Solver() ==  NAVIER_STOKES) || (config_container[ZONE_0]->GetKind_Solver() ==  RANS) ) ){
+    /*--- Set the initial condition for EULER/N-S/RANS and for a non FSI simulation ---*/
+    if ( (!fsi) &&
+         ( (config_container[ZONE_0]->GetKind_Solver() ==  EULER) ||
+           (config_container[ZONE_0]->GetKind_Solver() ==  NAVIER_STOKES) ||
+           (config_container[ZONE_0]->GetKind_Solver() ==  RANS) ) ){
+    //if (!fsi){
         for(iZone = 0; iZone < nZone; iZone++){
             solver_container[iZone][MESH_0][FLOW_SOL]->SetInitialCondition(geometry_container[iZone], solver_container[iZone], config_container[iZone], ExtIter);
         }
@@ -2922,11 +2923,6 @@ void CSingleZoneDriver::Run() {
                                        solver_container, numerics_container, config_container,
                                        surface_movement, grid_movement, FFDBox, ZONE_0);
 
-  switch (config_container[ZONE_0]->GetKind_Solver()){
-      case EULER: case NAVIER_STOKES: case RANS:
-        output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, ZONE_0); break;
-  }
-
 }
 
 void CSingleZoneDriver::Update(){
@@ -3048,8 +3044,6 @@ void CMultiZoneDriver::Run() {
     iteration_container[iZone]->Iterate(output, integration_container, geometry_container,
                                         solver_container, numerics_container, config_container,
                                         surface_movement, grid_movement, FFDBox, iZone);
-
-    output->SetConvHistory_Body(NULL, geometry_container, solver_container, config_container, integration_container, true, 0.0, iZone);
 
   }
 
