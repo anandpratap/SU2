@@ -54,47 +54,44 @@ using namespace std;
  */
 class CDriver {
 protected:
-  char* config_file_name;
+
+  char* config_file_name;                       /*!< \brief Configuration file name of the problem.*/
   char runtime_file_name[MAX_STRING_SIZE];
-  su2double StartTime, StopTime, UsedTime;
-  unsigned long ExtIter;
-  ofstream ConvHist_file;
-  unsigned short iMesh,
-                iZone,
-                nZone,                      /*!< \brief Total number of zones in the problem. */
-                nDim;
-  bool StopCalc, fsi;
-
-  /*--- Definition of the main containers --- */
-  CIteration **iteration_container;
-  COutput *output;
-  CIntegration ***integration_container;
-  CGeometry ***geometry_container;
-  CSolver ****solver_container;
-  CNumerics *****numerics_container;
-  CConfig **config_container;
-  CSurfaceMovement **surface_movement;
-  CVolumetricMovement **grid_movement;
-  CFreeFormDefBox*** FFDBox;
-  CInterpolator ***interpolator_container;
-  CTransfer ***transfer_container;
-
+  su2double StartTime,                          /*!< \brief Start point of the timer for performance benchmarking.*/
+            StopTime,                           /*!< \brief Stop point of the timer for performance benchmarking.*/
+            UsedTime;                           /*!< \brief Elapsed time between Start and Stop point of the timer.*/
+  unsigned long ExtIter;                        /*!< \brief External iteration.*/
+  ofstream ConvHist_file;                       /*!< \brief Convergence history file.*/
+  unsigned short iMesh,                         /*!< \brief Iterator on mesh levels.*/
+                iZone,                          /*!< \brief Iterator on zones.*/
+                nZone,                          /*!< \brief Total number of zones in the problem. */
+                nDim;                           /*!< \brief Number of dimensions.*/
+  bool StopCalc,                                /*!< \brief Stop computation flag.*/
+       fsi;                                     /*!< \brief FSI simulation flag.*/
+  CIteration **iteration_container;             /*!< \brief Container vector with all the iteration methods. */
+  COutput *output;                              /*!< \brief Pointer to the COutput class. */
+  CIntegration ***integration_container;        /*!< \brief Container vector with all the integration methods. */
+  CGeometry ***geometry_container;              /*!< \brief Geometrical definition of the problem. */
+  CSolver ****solver_container;                 /*!< \brief Container vector with all the solutions. */
+  CNumerics *****numerics_container;            /*!< \brief Description of the numerical method (the way in which the equations are solved). */
+  CConfig **config_container;                   /*!< \brief Definition of the particular problem. */
+  CSurfaceMovement **surface_movement;          /*!< \brief Surface movement classes of the problem. */
+  CVolumetricMovement **grid_movement;          /*!< \brief Volume grid movement classes of the problem. */
+  CFreeFormDefBox*** FFDBox;                    /*!< \brief FFD FFDBoxes of the problem. */
+  CInterpolator ***interpolator_container;      /*!< \brief Definition of the interpolation method between non-matching discretizations of the interface. */
+  CTransfer ***transfer_container;              /*!< \brief Definition of the transfer of information and the physics involved in the interface. */
   //Those are used to store the VarCoord of each node during FSI communications
   su2double APIVarCoord[3];
-  double APINodalForce[3];
-  double APINodalForceDensity[3];
+  su2double APINodalForce[3];
+  su2double APINodalForceDensity[3];
 
 public:
 
 	/*!
 	 * \brief Constructor of the class.
-	 * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_nZone - Total number of zones.
+	 * \param[in] confFile - Configuration file name.
+     * \param[in] val_nZone - Total number of zones.
+     * \param[in] val_nDim - Number of dimensions.
 	 */
   CDriver(char* confFile,
           unsigned short val_nZone,
@@ -103,24 +100,16 @@ public:
 	/*!
 	 * \brief Destructor of the class.
 	 */
-	virtual ~CDriver(void);
+  virtual ~CDriver(void);
 
 	/*!
 	 * \brief A virtual member.
-	 * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] output - Pointer to the COutput class.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config_container - Definition of the particular problem.
-   * \param[in] surface_movement - Surface movement classes of the problem.
-   * \param[in] grid_movement - Volume grid movement classes of the problem.
-   * \param[in] FFDBox - FFD FFDBoxes of the problem.
 	 */
-
   virtual void Run(){ };
 
+    /*!
+     * \brief Construction of the edge-based data structure and the multigrid structure.
+     */
   void Geometrical_Preprocessing();
 
   /*!
@@ -129,7 +118,7 @@ public:
    * \param[in] config - Definition of the particular problem.
    * \param[in] iZone - Index of the zone.
    */
-  void Iteration_Preprocessing(CIteration **iteration_container, CConfig **config, unsigned short iZone);
+  void Iteration_Preprocessing();
 
   /*!
    * \brief Definition and allocation of all solution classes.
@@ -173,10 +162,7 @@ public:
    * \param[in] nZone - Total number of zones.
    * \param[in] nDim - Total number of dimensions.
    */
-  void Interface_Preprocessing(CTransfer ***transfer_container, CInterpolator ***interpolator_container,
-		  	  	  	  	  	  	   CGeometry ***geometry_container, CConfig **config_container, CSolver ****solver_container,
-		  	  	  	  	  	  	   unsigned short nZone, unsigned short nDim);
-
+  void Interface_Preprocessing();
 
   /*!
    * \brief Definition and allocation of all solver classes.
@@ -187,7 +173,6 @@ public:
    */
   void Numerics_Preprocessing(CNumerics ****numerics_container, CSolver ***solver_container, CGeometry **geometry, CConfig *config);
 
-
   /*!
    * \brief Definition and allocation of all solver classes.
    * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
@@ -197,16 +182,8 @@ public:
    */
   void Numerics_Postprocessing(CNumerics ****numerics_container, CSolver ***solver_container, CGeometry **geometry, CConfig *config);
 
-
   /*!
    * \brief Deallocation routine
-   * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_nZone - Total number of zones.
    */
   void Postprocessing();
 
@@ -215,40 +192,28 @@ public:
    * \param[in] donorZone - zone in which the displacements will be predicted.
    * \param[in] targetZone - zone which receives the predicted displacements.
    */
-  virtual void Predict_Displacements(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 unsigned short donorZone, unsigned short targetZone){};
+  virtual void Predict_Displacements(unsigned short donorZone, unsigned short targetZone){};
 
   /*!
    * \brief A virtual member.
    * \param[in] donorZone - zone in which the tractions will be predicted.
    * \param[in] targetZone - zone which receives the predicted traction.
    */
-  virtual void Predict_Tractions(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 unsigned short donorZone, unsigned short targetZone){};
+  virtual void Predict_Tractions(unsigned short donorZone, unsigned short targetZone){};
 
   /*!
    * \brief A virtual member.
    * \param[in] donorZone - zone in which the displacements will be transferred.
    * \param[in] targetZone - zone which receives the tractions transferred.
    */
-  virtual void Transfer_Displacements(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short donorZone, unsigned short targetZone){};
+  virtual void Transfer_Displacements(unsigned short donorZone, unsigned short targetZone){};
 
   /*!
    * \brief A virtual member.
    * \param[in] donorZone - zone from which the tractions will be transferred.
    * \param[in] targetZone - zone which receives the tractions transferred.
    */
-  virtual void Transfer_Tractions(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short donorZone, unsigned short targetZone){};
+  virtual void Transfer_Tractions(unsigned short donorZone, unsigned short targetZone){};
 
   /*!
    * \brief A virtual member.
@@ -256,8 +221,7 @@ public:
    * \param[in] targetZone - destination of the information.
    * \param[in] iFSIIter - Fluid-Structure Interaction subiteration.
    */
-  virtual void Relaxation_Displacements(COutput *output, CGeometry ***geometry_container, CSolver ****solver_container,
-			CConfig **config_container, unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter){};
+  virtual void Relaxation_Displacements(unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter){};
 
   /*!
    * \brief A virtual member.
@@ -265,53 +229,74 @@ public:
    * \param[in] targetZone - destination of the information.
    * \param[in] iFSIIter - Fluid-Structure Interaction subiteration.
    */
-  virtual void Relaxation_Tractions(COutput *output, CGeometry ***geometry_container, CSolver ****solver_container,
-			CConfig **config_container, unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter){};
+  virtual void Relaxation_Tractions(unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter){};
 
   /*!
    * \brief A virtual member.
-   * \param[in] zoneFlow - zone of the flow equations.
-   * \param[in] zoneStruct - zone of the structural equations.
    */
   virtual void Update(){};
 
+  /*!
+   * \brief Launch the computation for all zones and all physics.
+   */
   void StartSolver();
 
+  /*!
+   * \brief A virtual member.
+   */
   virtual void ResetConvergence(){ };
 
+  /*!
+   * \brief Perform some pre-processing before an iteration of the physics.
+   */
   void PreprocessExtIter(unsigned long ExtIter);
 
+  /*!
+   * \brief Monitor the computation.
+   */
   bool Monitor();
 
+  /*!
+   * \brief Output the solution in solution file.
+   */
   void Output();
 
+  /*!
+   * \brief Perform a dynamic mesh deformation, included grid velocity computation and update of the multigrid structure.
+   */
   virtual void DynamicMeshUpdate(unsigned long ExtIter){ };
 
+  /*!
+   * \brief Perform a static mesh deformation, without considering grid velocity.
+   */
   virtual void StaticMeshUpdate() { };
 
+  /*!
+   * \brief Perform a mesh deformation as initial condition.
+   */
   virtual void SetInitialMesh() { };
 
   /*--- External communication layer ---*/
-  double outputFluidLoads_Drag();
-  double outputFluidLoads_Lift();
-  double outputFluidLoads_Mz();
-  unsigned short getFSIMarkerID();
-  unsigned long getNumberOfFluidInterfaceNodes(unsigned short iMarker);
-  unsigned int getInterfaceNodeGlobalIndex(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodePosX(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodePosY(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodePosZ(unsigned short iMarker, unsigned short iVertex);
-  bool computeInterfaceNodalForce(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodeFX(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodeFY(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodeFZ(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodeFXDens(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodeFYDens(unsigned short iMarker, unsigned short iVertex);
-  double getInterfaceNodeFZDens(unsigned short iMarker, unsigned short iVertex);
-  void setNewPosX(unsigned short iMarker, unsigned short iVertex, double newPosX);
-  void setNewPosY(unsigned short iMarker, unsigned short iVertex, double newPosY);
-  void setNewPosZ(unsigned short iMarker, unsigned short iVertex, double newPosZ);
-  double setVarCoord(unsigned short iMarker, unsigned short iVertex);
+  double Get_Drag();
+  double Get_Lift();
+  double Get_Mz();
+  unsigned short GetMovingMarker();
+  unsigned long GetNumberVertices(unsigned short iMarker);
+  unsigned int GetVertexGlobalIndex(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexCoordX(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexCoordY(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexCoordZ(unsigned short iMarker, unsigned short iVertex);
+  bool ComputeVertexForces(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexForceX(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexForceY(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexForceZ(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexForceDensityX(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexForceDensityY(unsigned short iMarker, unsigned short iVertex);
+  double GetVertexForceDensityZ(unsigned short iMarker, unsigned short iVertex);
+  void SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, double newPosX);
+  void SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, double newPosY);
+  void SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, double newPosZ);
+  double SetVertexVarCoord(unsigned short iMarker, unsigned short iVertex);
 
 };
 
@@ -327,13 +312,9 @@ public:
 
 	/*!
 	 * \brief Constructor of the class.
-	 * \param[in] iteration_container - Container vector with all the iteration methods.
-	 * \param[in] solver_container - Container vector with all the solutions.
-	 * \param[in] geometry_container - Geometrical definition of the problem.
-	 * \param[in] integration_container - Container vector with all the integration methods.
-	 * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-	 * \param[in] config - Definition of the particular problem.
-	 * \param[in] val_nZone - Total number of zones.
+	 * \param[in] confFile - Configuration file name.
+     * \param[in] val_nZone - Total number of zones.
+     * \param[in] val_nDim - Number of dimensions.
 	 */
   CSingleZoneDriver(char* confFile,
                     unsigned short val_nZone,
@@ -346,31 +327,33 @@ public:
 
 	/*!
 	 * \brief Run a single iteration of the physics within a single zone.
-	 * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] output - Pointer to the COutput class.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config_container - Definition of the particular problem.
-   * \param[in] surface_movement - Surface movement classes of the problem.
-   * \param[in] grid_movement - Volume grid movement classes of the problem.
-   * \param[in] FFDBox - FFD FFDBoxes of the problem.
 	 */
-
   void Run();
 
+    /*!
+     * \brief Update the dual-time solution for a single zone.
+     */
   void Update();
 
+    /*!
+     * \brief Reset the convergence flag (set to false) of the single zone solver.
+     */
   void ResetConvergence();
 
+    /*!
+     * \brief Perform a dynamic mesh deformation, included grid velocity computation and the update of the multigrid structure (single zone).
+     */
   void DynamicMeshUpdate(unsigned long ExtIter);
 
+    /*!
+     * \brief Perform a static mesh deformation, without considering grid velocity (single zone).
+     */
   void StaticMeshUpdate();
 
+    /*!
+     * \brief Perform a mesh deformation as initial condition (single zone).
+     */
   void SetInitialMesh();
-
-
 };
 
 
@@ -383,16 +366,12 @@ public:
 class CMultiZoneDriver : public CDriver {
 public:
 
-  /*!
-   * \brief Constructor of the class.
-   * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_nZone - Total number of zones.
-   */
+    /*!
+	 * \brief Constructor of the class.
+	 * \param[in] confFile - Configuration file name.
+     * \param[in] val_nZone - Total number of zones.
+     * \param[in] val_nDim - Number of dimensions.
+	 */
   CMultiZoneDriver(char* confFile,
                    unsigned short val_nZone,
                    unsigned short val_nDim);
@@ -404,28 +383,32 @@ public:
 
   /*!
    * \brief Run a single iteration of the physics within multiple zones.
-   * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] output - Pointer to the COutput class.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config_container - Definition of the particular problem.
-   * \param[in] surface_movement - Surface movement classes of the problem.
-   * \param[in] grid_movement - Volume grid movement classes of the problem.
-   * \param[in] FFDBox - FFD FFDBoxes of the problem.
    */
-
   void Run();
 
+    /*!
+     * \brief Update the dual-time solution within multiple zones.
+     */
   void Update();
 
+    /*!
+     * \brief Reset the convergence flag (set to false) of the multizone solver.
+     */
   void ResetConvergence();
 
+    /*!
+     * \brief Perform a dynamic mesh deformation, included grid velocity computation and the update of the multigrid structure (multiple zone).
+     */
   void DynamicMeshUpdate(unsigned long ExtIter);
 
+    /*!
+     * \brief Perform a static mesh deformation, without considering grid velocity (multiple zone).
+     */
   void StaticMeshUpdate();
 
+    /*!
+     * \brief Perform a mesh deformation as initial condition (multiple zone).
+     */
   void SetInitialMesh();
 
 };
@@ -442,13 +425,9 @@ public:
 
   /*!
    * \brief Constructor of the class.
-   * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config - Definition of the particular problem.
+   * \param[in] confFile - Configuration file name.
    * \param[in] val_nZone - Total number of zones.
+   * \param[in] val_nDim - Number of dimensions.
    */
   CSpectralDriver(char* confFile,
                   unsigned short val_nZone,
@@ -461,31 +440,15 @@ public:
 
   /*!
    * \brief Run a single iteration of a spectral method problem.
-   * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] output - Pointer to the COutput class.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config_container - Definition of the particular problem.
-   * \param[in] surface_movement - Surface movement classes of the problem.
-   * \param[in] grid_movement - Volume grid movement classes of the problem.
-   * \param[in] FFDBox - FFD FFDBoxes of the problem.
    */
-
   void Run();
 
   /*!
    * \brief Computation and storage of the time spectral source terms.
    * \author T. Economon, K. Naik
-   * \param[in] geometry - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] nZone - Total number of zones (periodic instances).
    * \param[in] iZone - Current zone number.
    */
-  void SetTimeSpectral(CGeometry ***geometry_container, CSolver ****solver_container,
-                       CConfig **config_container, unsigned short nZone, unsigned short iZone);
+  void SetTimeSpectral(unsigned short iZone);
 
   /*!
    * \brief Computation of the Time-Spectral operator matrix.
@@ -493,20 +456,22 @@ public:
    * \param[in] D - su2double pointer to the operator matrix.
    * \param[in] nZone - Total number of zones (periodic instances).
    */
-  void ComputeTimeSpectral_Operator(su2double **D, su2double period, unsigned short nZone);
+  void ComputeTimeSpectral_Operator(su2double **D, su2double period);
 
   /*!
    * \brief Computation and storage of the time-spectral mesh velocities.
    * \author K. Naik, T. Economon
-   * \param[in] geometry - Geometrical definition of the problem.
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] nZone - Total number of zones (periodic instances).
    */
-  void SetTimeSpectral_Velocities(CGeometry ***geometry_container,
-                                  CConfig **config_container, unsigned short nZone);
+  void SetTimeSpectral_Velocities();
 
+  /*!
+   * \brief Update the solution for the spectral method.
+   */
   void Update();
 
+  /*!
+   * \brief Reset the convergence flag (set to false) of the solver for the spectral method.
+   */
   void ResetConvergence();
 
 };
@@ -522,15 +487,11 @@ class CFSIDriver : public CDriver {
 public:
 
 	/*!
-	 * \brief Constructor of the class.
-	 * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_nZone - Total number of zones.
-	 */
+     * \brief Constructor of the class.
+     * \param[in] confFile - Configuration file name.
+     * \param[in] val_nZone - Total number of zones.
+     * \param[in] val_nDim - Number of dimensions.
+     */
   CFSIDriver(char* confFile,
              unsigned short val_nZone,
              unsigned short val_nDim);
@@ -542,18 +503,7 @@ public:
 
 	/*!
 	 * \brief Run a Block Gauss-Seidel iteration of the FSI problem.
-	 * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] output - Pointer to the COutput class.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config_container - Definition of the particular problem.
-   * \param[in] surface_movement - Surface movement classes of the problem.
-   * \param[in] grid_movement - Volume grid movement classes of the problem.
-   * \param[in] FFDBox - FFD FFDBoxes of the problem.
 	 */
-
   void Run();
 
   /*!
@@ -561,40 +511,28 @@ public:
    * \param[in] donorZone - zone in which the displacements will be predicted.
    * \param[in] targetZone - zone which receives the predicted displacements.
    */
-  void Predict_Displacements(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 unsigned short donorZone, unsigned short targetZone);
+  void Predict_Displacements(unsigned short donorZone, unsigned short targetZone);
 
   /*!
    * \brief Predict the fluid tractions to pass them into the structural solver on a BGS implementation.
    * \param[in] donorZone - zone in which the tractions will be predicted.
    * \param[in] targetZone - zone which receives the predicted traction.
    */
-  void Predict_Tractions(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 unsigned short donorZone, unsigned short targetZone);
+  void Predict_Tractions(unsigned short donorZone, unsigned short targetZone);
 
   /*!
    * \brief Transfer the displacements computed on the structural solver into the fluid solver.
    * \param[in] donorZone - zone in which the displacements will be transferred.
    * \param[in] targetZone - zone which receives the tractions transferred.
    */
-  void Transfer_Displacements(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short donorZone, unsigned short targetZone);
+  void Transfer_Displacements(unsigned short donorZone, unsigned short targetZone);
 
   /*!
    * \brief Transfer the tractions computed on the fluid solver into the structural solver.
    * \param[in] donorZone - zone from which the tractions will be transferred.
    * \param[in] targetZone - zone which receives the tractions transferred.
    */
-  void Transfer_Tractions(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short donorZone, unsigned short targetZone);
+  void Transfer_Tractions(unsigned short donorZone, unsigned short targetZone);
 
   /*!
    * \brief Apply a relaxation method into the computed displacements.
@@ -602,8 +540,7 @@ public:
    * \param[in] targetZone - destination of the information.
    * \param[in] iFSIIter - Fluid-Structure Interaction subiteration.
    */
-  void Relaxation_Displacements(COutput *output, CGeometry ***geometry_container, CSolver ****solver_container,
-			CConfig **config_container, unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter);
+  void Relaxation_Displacements(unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter);
 
   /*!
    * \brief Apply a relaxation method into the computed tractions.
@@ -611,17 +548,13 @@ public:
    * \param[in] targetZone - destination of the information.
    * \param[in] iFSIIter - Fluid-Structure Interaction subiteration.
    */
-  void Relaxation_Tractions(COutput *output, CGeometry ***geometry_container, CSolver ****solver_container,
-			CConfig **config_container, unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter);
+  void Relaxation_Tractions(unsigned short donorZone, unsigned short targetZone, unsigned long iFSIIter);
 
   /*!
    * \brief Enforce the coupling condition at the end of the time step
    * \param[in] zoneFlow - zone of the flow equations.
    * \param[in] zoneStruct - zone of the structural equations.
    */
-  void Update(CIteration **iteration_container, COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short zoneFlow, unsigned short zoneStruct);
+  void Update(unsigned short zoneFlow, unsigned short zoneStruct);
 
 };

@@ -199,7 +199,7 @@ CDriver::CDriver(char* confFile,
     if (rank == MASTER_NODE){
       cout << endl <<"------------------------ Iteration Preprocessing ------------------------" << endl;
     }
-    Iteration_Preprocessing(iteration_container, config_container, iZone);
+    Iteration_Preprocessing();
 
     /*--- Definition of the solver class: solver_container[#ZONES][#MG_GRIDS][#EQ_SYSTEMS].
      The solver classes are specific to a particular set of governing equations,
@@ -276,8 +276,7 @@ CDriver::CDriver(char* confFile,
 			}
 		}
 
-		Interface_Preprocessing(transfer_container, interpolator_container, geometry_container,
-				config_container, solver_container, nZone, nDim);
+		Interface_Preprocessing();
 
 	}
 
@@ -2087,7 +2086,7 @@ void CDriver::Numerics_Postprocessing(CNumerics ****numerics_container,
 
 }
 
-void CDriver::Iteration_Preprocessing(CIteration **iteration_container, CConfig **config, unsigned short iZone) {
+void CDriver::Iteration_Preprocessing() {
 
   int rank = MASTER_NODE;
 #ifdef HAVE_MPI
@@ -2100,56 +2099,54 @@ void CDriver::Iteration_Preprocessing(CIteration **iteration_container, CConfig 
 
   /*--- Loop over all zones and instantiate the physics iteration. ---*/
 
-  switch (config[iZone]->GetKind_Solver()) {
+  switch (config_container[iZone]->GetKind_Solver()) {
 
     case EULER: case NAVIER_STOKES: case RANS:
       if (rank == MASTER_NODE)
         cout << ": Euler/Navier-Stokes/RANS flow iteration." << endl;
-      iteration_container[iZone] = new CMeanFlowIteration(config[iZone]);
+      iteration_container[iZone] = new CMeanFlowIteration(config_container[iZone]);
       break;
 
     case WAVE_EQUATION:
       if (rank == MASTER_NODE)
         cout << ": wave iteration." << endl;
-      iteration_container[iZone] = new CWaveIteration(config[iZone]);
+      iteration_container[iZone] = new CWaveIteration(config_container[iZone]);
       break;
 
     case HEAT_EQUATION:
       if (rank == MASTER_NODE)
         cout << ": heat iteration." << endl;
-      iteration_container[iZone] = new CHeatIteration(config[iZone]);
+      iteration_container[iZone] = new CHeatIteration(config_container[iZone]);
       break;
 
     case POISSON_EQUATION:
       if (rank == MASTER_NODE)
         cout << ": poisson iteration." << endl;
-      iteration_container[iZone] = new CPoissonIteration(config[iZone]);
+      iteration_container[iZone] = new CPoissonIteration(config_container[iZone]);
       break;
 
     case FEM_ELASTICITY:
       if (rank == MASTER_NODE)
         cout << ": FEM iteration." << endl;
-      iteration_container[iZone] = new CFEM_StructuralAnalysis(config[iZone]);
+      iteration_container[iZone] = new CFEM_StructuralAnalysis(config_container[iZone]);
       break;
     case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS:
       if (rank == MASTER_NODE)
         cout << ": adjoint Euler/Navier-Stokes/RANS flow iteration." << endl;
-      iteration_container[iZone] = new CAdjMeanFlowIteration(config[iZone]);
+      iteration_container[iZone] = new CAdjMeanFlowIteration(config_container[iZone]);
       break;
 
     case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
       if (rank == MASTER_NODE)
         cout << ": discrete adjoint Euler/Navier-Stokes/RANS flow iteration." << endl;
-      iteration_container[iZone] = new CDiscAdjMeanFlowIteration(config[iZone]);
+      iteration_container[iZone] = new CDiscAdjMeanFlowIteration(config_container[iZone]);
       break;
   }
 
 }
 
 
-void CDriver::Interface_Preprocessing(CTransfer ***transfer_container, CInterpolator ***interpolator_container,
-							 CGeometry ***geometry_container, CConfig **config_container,
-							 CSolver ****solver_container, unsigned short nZone, unsigned short nDim) {
+void CDriver::Interface_Preprocessing() {
 
 	int rank = MASTER_NODE;
 	unsigned short donorZone, targetZone;
@@ -2524,7 +2521,7 @@ void CDriver::Output(){
 
 CDriver::~CDriver(void) {}
 
-double CDriver::outputFluidLoads_Drag(){
+double CDriver::Get_Drag(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
@@ -2545,7 +2542,7 @@ double CDriver::outputFluidLoads_Drag(){
   return CDrag*factor;
 }
 
-double CDriver::outputFluidLoads_Lift(){
+double CDriver::Get_Lift(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
@@ -2566,7 +2563,7 @@ double CDriver::outputFluidLoads_Lift(){
   return CLift*factor;
 }
 
-double CDriver::outputFluidLoads_Mz(){
+double CDriver::Get_Mz(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
@@ -2589,7 +2586,7 @@ double CDriver::outputFluidLoads_Mz(){
 
 }
 
-unsigned short CDriver::getFSIMarkerID(){
+unsigned short CDriver::GetMovingMarker(){
 
   unsigned short IDtoSend(0),iMarker, jMarker, Moving;
   string Marker_Tag, Moving_Tag;
@@ -2612,7 +2609,7 @@ unsigned short CDriver::getFSIMarkerID(){
 
 }
 
-unsigned long CDriver::getNumberOfFluidInterfaceNodes(unsigned short iMarker){
+unsigned long CDriver::GetNumberVertices(unsigned short iMarker){
 
   unsigned long nFluidVertex;
   unsigned short jMarker, Moving;
@@ -2635,7 +2632,7 @@ unsigned long CDriver::getNumberOfFluidInterfaceNodes(unsigned short iMarker){
 
 }
 
-unsigned int CDriver::getInterfaceNodeGlobalIndex(unsigned short iMarker, unsigned short iVertex){
+unsigned int CDriver::GetVertexGlobalIndex(unsigned short iMarker, unsigned short iVertex){
 
   unsigned long iPoint, GlobalIndex;
 
@@ -2647,7 +2644,7 @@ unsigned int CDriver::getInterfaceNodeGlobalIndex(unsigned short iMarker, unsign
 
 }
 
-double CDriver::getInterfaceNodePosX(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexCoordX(unsigned short iMarker, unsigned short iVertex){
 
   su2double* Coord;
   unsigned long iPoint;
@@ -2658,7 +2655,7 @@ double CDriver::getInterfaceNodePosX(unsigned short iMarker, unsigned short iVer
 
 }
 
-double CDriver::getInterfaceNodePosY(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexCoordY(unsigned short iMarker, unsigned short iVertex){
 
   su2double* Coord;
   unsigned long iPoint;
@@ -2668,7 +2665,7 @@ double CDriver::getInterfaceNodePosY(unsigned short iMarker, unsigned short iVer
   return Coord[1];
 }
 
-double CDriver::getInterfaceNodePosZ(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexCoordZ(unsigned short iMarker, unsigned short iVertex){
 
   su2double* Coord;
   unsigned long iPoint;
@@ -2685,7 +2682,7 @@ double CDriver::getInterfaceNodePosZ(unsigned short iMarker, unsigned short iVer
 
 }
 
-bool CDriver::computeInterfaceNodalForce(unsigned short iMarker, unsigned short iVertex){
+bool CDriver::ComputeVertexForces(unsigned short iMarker, unsigned short iVertex){
 
     unsigned long iPoint;
     unsigned short iDim, jDim;
@@ -2794,37 +2791,37 @@ bool CDriver::computeInterfaceNodalForce(unsigned short iMarker, unsigned short 
 
 }
 
-double CDriver::getInterfaceNodeFX(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexForceX(unsigned short iMarker, unsigned short iVertex){
 
     return APINodalForce[0];
 
 }
 
-double CDriver::getInterfaceNodeFY(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexForceY(unsigned short iMarker, unsigned short iVertex){
 
     return APINodalForce[1];
 
 }
 
-double CDriver::getInterfaceNodeFZ(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexForceZ(unsigned short iMarker, unsigned short iVertex){
 
     return APINodalForce[2];
 
 }
 
-double CDriver::getInterfaceNodeFXDens(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexForceDensityX(unsigned short iMarker, unsigned short iVertex){
     return APINodalForceDensity[0];
 }
 
-double CDriver::getInterfaceNodeFYDens(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexForceDensityY(unsigned short iMarker, unsigned short iVertex){
     return APINodalForceDensity[1];
 }
 
-double CDriver::getInterfaceNodeFZDens(unsigned short iMarker, unsigned short iVertex){
+double CDriver::GetVertexForceDensityZ(unsigned short iMarker, unsigned short iVertex){
     return APINodalForceDensity[2];
 }
 
-void CDriver::setNewPosX(unsigned short iMarker, unsigned short iVertex, double newPosX){
+void CDriver::SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, double newPosX){
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
@@ -2844,7 +2841,7 @@ void CDriver::setNewPosX(unsigned short iMarker, unsigned short iVertex, double 
 
 }
 
-void CDriver::setNewPosY(unsigned short iMarker, unsigned short iVertex, double newPosY){
+void CDriver::SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, double newPosY){
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
@@ -2863,7 +2860,7 @@ void CDriver::setNewPosY(unsigned short iMarker, unsigned short iVertex, double 
   }
 }
 
-void CDriver::setNewPosZ(unsigned short iMarker, unsigned short iVertex, double newPosZ){
+void CDriver::SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, double newPosZ){
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
@@ -2887,7 +2884,7 @@ void CDriver::setNewPosZ(unsigned short iMarker, unsigned short iVertex, double 
   }
 }
 
-double CDriver::setVarCoord(unsigned short iMarker, unsigned short iVertex){
+double CDriver::SetVertexVarCoord(unsigned short iMarker, unsigned short iVertex){
 
     double nodalVarCoordNorm;
 
@@ -2959,11 +2956,10 @@ void CSingleZoneDriver::ResetConvergence(){
       integration_container[ZONE_0][FEA_SOL]->SetConvergence(false);
       break;
 
-    case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS:
+    case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS: case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
       integration_container[ZONE_0][ADJFLOW_SOL]->SetConvergence(false);
-      break;
-
-    case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
+      if( (config_container[ZONE_0]->GetKind_Solver() == ADJ_RANS) || (config_container[ZONE_0]->GetKind_Solver() == DISC_ADJ_RANS) )
+        integration_container[ZONE_0][ADJTURB_SOL]->SetConvergence(false);
       break;
   }
 
@@ -2991,7 +2987,7 @@ void CSingleZoneDriver::StaticMeshUpdate(){
   if(rank == MASTER_NODE) cout << " Deforming the volume grid." << endl;
   grid_movement[ZONE_0]->SetVolume_Deformation(geometry_container[ZONE_0][MESH_0], config_container[ZONE_0], true);
 
-  if(rank == MASTER_NODE) cout << "No grid velocity to be computde : static grid deformation." << endl;
+  if(rank == MASTER_NODE) cout << "No grid velocity to be computed : static grid deformation." << endl;
 
   if(rank == MASTER_NODE) cout << " Updating multigrid structure." << endl;
   grid_movement[ZONE_0]->UpdateMultiGrid(geometry_container[ZONE_0], config_container[ZONE_0]);
@@ -3064,34 +3060,33 @@ void CMultiZoneDriver::Update(){
 void CMultiZoneDriver::ResetConvergence(){
 
   for(iZone = 0; iZone < nZone; iZone++){
-    switch (config_container[ZONE_0]->GetKind_Solver()) {
+    switch (config_container[iZone]->GetKind_Solver()) {
 
     case EULER: case NAVIER_STOKES: case RANS:
-      integration_container[ZONE_0][FLOW_SOL]->SetConvergence(false);
-      if (config_container[ZONE_0]->GetKind_Solver() == RANS) integration_container[ZONE_0][TURB_SOL]->SetConvergence(false);
-      if(config_container[ZONE_0]->GetKind_Trans_Model() == LM) integration_container[ZONE_0][TRANS_SOL]->SetConvergence(false);
+      integration_container[iZone][FLOW_SOL]->SetConvergence(false);
+      if (config_container[iZone]->GetKind_Solver() == RANS) integration_container[iZone][TURB_SOL]->SetConvergence(false);
+      if(config_container[iZone]->GetKind_Trans_Model() == LM) integration_container[iZone][TRANS_SOL]->SetConvergence(false);
       break;
 
     case WAVE_EQUATION:
-      integration_container[ZONE_0][WAVE_SOL]->SetConvergence(false);
+      integration_container[iZone][WAVE_SOL]->SetConvergence(false);
       break;
 
     case HEAT_EQUATION:
-      integration_container[ZONE_0][HEAT_SOL]->SetConvergence(false);
+      integration_container[iZone][HEAT_SOL]->SetConvergence(false);
       break;
 
     case POISSON_EQUATION:
       break;
 
     case FEM_ELASTICITY:
-      integration_container[ZONE_0][FEA_SOL]->SetConvergence(false);
+      integration_container[iZone][FEA_SOL]->SetConvergence(false);
       break;
 
-    case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS:
-      integration_container[ZONE_0][ADJFLOW_SOL]->SetConvergence(false);
-      break;
-
-    case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
+    case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS: case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
+      integration_container[iZone][ADJFLOW_SOL]->SetConvergence(false);
+      if( (config_container[iZone]->GetKind_Solver() == ADJ_RANS) || (config_container[iZone]->GetKind_Solver() == DISC_ADJ_RANS) )
+        integration_container[iZone][ADJTURB_SOL]->SetConvergence(false);
       break;
     }
   }
@@ -3170,9 +3165,9 @@ void CSpectralDriver::Run() {
    initialize the source terms, and compute any grid veocities, if necessary. ---*/
 
   if (ExtIter == 0) {
-    SetTimeSpectral_Velocities(geometry_container, config_container, nZone);
+    SetTimeSpectral_Velocities();
     for (iZone = 0; iZone < nZone; iZone++)
-      SetTimeSpectral(geometry_container, solver_container, config_container, nZone, (iZone+1)%nZone);
+      SetTimeSpectral((iZone+1)%nZone);
   }
 
   /*--- Run a single iteration of a spectral method problem. Preprocess all
@@ -3198,7 +3193,7 @@ void CSpectralDriver::Update(){
 
     /*--- Update the spectral source terms across all zones ---*/
 
-    SetTimeSpectral(geometry_container, solver_container, config_container, nZone, (iZone+1)%nZone);
+    SetTimeSpectral((iZone+1)%nZone);
 
     iteration_container[iZone]->Update(output, integration_container, geometry_container,
                                        solver_container, numerics_container, config_container,
@@ -3234,19 +3229,17 @@ void CSpectralDriver::ResetConvergence(){
       integration_container[ZONE_0][FEA_SOL]->SetConvergence(false);
       break;
 
-    case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS:
-      integration_container[ZONE_0][ADJFLOW_SOL]->SetConvergence(false);
-      break;
-
-    case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
+    case ADJ_EULER: case ADJ_NAVIER_STOKES: case ADJ_RANS: case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
+      integration_container[iZone][ADJFLOW_SOL]->SetConvergence(false);
+      if( (config_container[iZone]->GetKind_Solver() == ADJ_RANS) || (config_container[iZone]->GetKind_Solver() == DISC_ADJ_RANS) )
+        integration_container[iZone][ADJTURB_SOL]->SetConvergence(false);
       break;
     }
   }
 
 }
 
-void CSpectralDriver::SetTimeSpectral(CGeometry ***geometry_container, CSolver ****solver_container,
-                                      CConfig **config_container, unsigned short nZone, unsigned short iZone) {
+void CSpectralDriver::SetTimeSpectral(unsigned short iZone) {
 
   int rank = MASTER_NODE;
 #ifdef HAVE_MPI
@@ -3280,7 +3273,7 @@ void CSpectralDriver::SetTimeSpectral(CGeometry ***geometry_container, CSolver *
   }
 
   /*--- Build the time-spectral operator matrix ---*/
-  ComputeTimeSpectral_Operator(D, period, nZone);
+  ComputeTimeSpectral_Operator(D, period);
   //  for (kZone = 0; kZone < nZone; kZone++) {
   //    for (jZone = 0; jZone < nZone; jZone++) {
   //
@@ -3519,7 +3512,7 @@ void CSpectralDriver::SetTimeSpectral(CGeometry ***geometry_container, CSolver *
 
 }
 
-void CSpectralDriver::ComputeTimeSpectral_Operator(su2double **D, su2double period, unsigned short nZone) {
+void CSpectralDriver::ComputeTimeSpectral_Operator(su2double **D, su2double period) {
 
   unsigned short kZone, jZone;
 
@@ -3553,8 +3546,7 @@ void CSpectralDriver::ComputeTimeSpectral_Operator(su2double **D, su2double peri
 
 }
 
-void CSpectralDriver::SetTimeSpectral_Velocities(CGeometry ***geometry_container,
-                                                 CConfig **config_container, unsigned short nZone) {
+void CSpectralDriver::SetTimeSpectral_Velocities() {
 
   unsigned short iZone, jDegree, iDim, iMGlevel;
   unsigned short nDim = geometry_container[ZONE_0][MESH_0]->GetnDim();
@@ -3690,10 +3682,7 @@ void CFSIDriver::Run() {
 	/*---------------- Predict structural displacements ---------------*/
 	/*-----------------------------------------------------------------*/
 
-	Predict_Displacements(output, integration_container, geometry_container,
-            		      solver_container, numerics_container, config_container,
-            		      surface_movement, grid_movement, FFDBox,
-            		      ZONE_STRUCT, ZONE_FLOW);
+	Predict_Displacements(ZONE_STRUCT, ZONE_FLOW);
 
 	while (FSIIter < nFSIIter){
 
@@ -3701,10 +3690,7 @@ void CFSIDriver::Run() {
 		/*------------------- Transfer Displacements ----------------------*/
 		/*-----------------------------------------------------------------*/
 
-		Transfer_Displacements(output, integration_container, geometry_container,
-                solver_container, numerics_container, config_container,
-                surface_movement, grid_movement, FFDBox, transfer_container,
-                ZONE_STRUCT, ZONE_FLOW);
+		Transfer_Displacements(ZONE_STRUCT, ZONE_FLOW);
 
 		/*-----------------------------------------------------------------*/
 		/*-------------------- Fluid subiteration -------------------------*/
@@ -3733,10 +3719,7 @@ void CFSIDriver::Run() {
 		/*------------------- Set FEA loads from fluid --------------------*/
 		/*-----------------------------------------------------------------*/
 
-		Transfer_Tractions(output, integration_container, geometry_container,
-                solver_container, numerics_container, config_container,
-                surface_movement, grid_movement, FFDBox, transfer_container,
-                ZONE_FLOW, ZONE_STRUCT);
+		Transfer_Tractions(ZONE_FLOW, ZONE_STRUCT);
 
 		/*-----------------------------------------------------------------*/
 		/*------------------ Structural subiteration ----------------------*/
@@ -3758,8 +3741,7 @@ void CFSIDriver::Run() {
 		/*----------------- Displacements relaxation ----------------------*/
 		/*-----------------------------------------------------------------*/
 
-		Relaxation_Displacements(output, geometry_container, solver_container, config_container,
-								 ZONE_STRUCT, ZONE_FLOW, FSIIter);
+		Relaxation_Displacements(ZONE_STRUCT, ZONE_FLOW, FSIIter);
 
 		/*-----------------------------------------------------------------*/
 		/*-------------------- Check convergence --------------------------*/
@@ -3782,10 +3764,7 @@ void CFSIDriver::Run() {
   	/*------------------ Update coupled solver ------------------------*/
 	/*-----------------------------------------------------------------*/
 
-	Update(iteration_container, output, integration_container, geometry_container,
-           solver_container, numerics_container, config_container,
-           surface_movement, grid_movement, FFDBox, transfer_container,
-           ZONE_FLOW, ZONE_STRUCT);
+	Update(ZONE_FLOW, ZONE_STRUCT);
 
 
 	/*-----------------------------------------------------------------*/
@@ -3813,10 +3792,7 @@ void CFSIDriver::Run() {
 
 }
 
-void CFSIDriver::Predict_Displacements(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 unsigned short donorZone, unsigned short targetZone){
+void CFSIDriver::Predict_Displacements(unsigned short donorZone, unsigned short targetZone){
 
 #ifdef HAVE_MPI
 	int rank;
@@ -3833,17 +3809,11 @@ void CFSIDriver::Predict_Displacements(COutput *output, CIntegration ***integrat
 
 }
 
-void CFSIDriver::Predict_Tractions(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 unsigned short donorZone, unsigned short targetZone){
+void CFSIDriver::Predict_Tractions(unsigned short donorZone, unsigned short targetZone){
 
 }
 
-void CFSIDriver::Transfer_Displacements(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short donorZone, unsigned short targetZone){
+void CFSIDriver::Transfer_Displacements(unsigned short donorZone, unsigned short targetZone){
 
 #ifdef HAVE_MPI
 	int rank;
@@ -3915,10 +3885,7 @@ void CFSIDriver::Transfer_Displacements(COutput *output, CIntegration ***integra
 
 }
 
-void CFSIDriver::Transfer_Tractions(COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-		     CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short donorZone, unsigned short targetZone){
+void CFSIDriver::Transfer_Tractions(unsigned short donorZone, unsigned short targetZone){
 
 #ifdef HAVE_MPI
 	int rank;
@@ -3986,8 +3953,7 @@ void CFSIDriver::Transfer_Tractions(COutput *output, CIntegration ***integration
 
 }
 
-void CFSIDriver::Relaxation_Displacements(COutput *output, CGeometry ***geometry_container, CSolver ****solver_container,
-			CConfig **config_container, unsigned short donorZone, unsigned short targetZone, unsigned long FSIIter){
+void CFSIDriver::Relaxation_Displacements(unsigned short donorZone, unsigned short targetZone, unsigned long FSIIter){
 
 #ifdef HAVE_MPI
 	int rank;
@@ -4013,15 +3979,11 @@ void CFSIDriver::Relaxation_Displacements(COutput *output, CGeometry ***geometry
 
 }
 
-void CFSIDriver::Relaxation_Tractions(COutput *output, CGeometry ***geometry_container, CSolver ****solver_container,
-			CConfig **config_container, unsigned short donorZone, unsigned short targetZone, unsigned long FSIIter){
+void CFSIDriver::Relaxation_Tractions(unsigned short donorZone, unsigned short targetZone, unsigned long FSIIter){
 
 }
 
-void CFSIDriver::Update(CIteration **iteration_container, COutput *output, CIntegration ***integration_container, CGeometry ***geometry_container,
-			 CSolver ****solver_container, CNumerics *****numerics_container, CConfig **config_container,
-			 CSurfaceMovement **surface_movement, CVolumetricMovement **grid_movement, CFreeFormDefBox*** FFDBox,
-			 CTransfer ***transfer_container, unsigned short ZONE_FLOW, unsigned short ZONE_STRUCT){
+void CFSIDriver::Update(unsigned short ZONE_FLOW, unsigned short ZONE_STRUCT){
 
 	unsigned long IntIter = 0; // This doesn't affect here but has to go into the function
 	unsigned long ExtIter = config_container[ZONE_FLOW]->GetExtIter();
@@ -4035,10 +3997,7 @@ void CFSIDriver::Update(CIteration **iteration_container, COutput *output, CInte
 
 	/*-------------------- Transfer the displacements --------------------*/
 
-	Transfer_Displacements(output, integration_container, geometry_container,
-            solver_container, numerics_container, config_container,
-            surface_movement, grid_movement, FFDBox, transfer_container,
-            ZONE_STRUCT, ZONE_FLOW);
+	Transfer_Displacements(ZONE_STRUCT, ZONE_FLOW);
 
 	/*-------------------- Set the grid movement -------------------------*/
 
