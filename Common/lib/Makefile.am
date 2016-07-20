@@ -102,7 +102,7 @@ lib_sources = \
   ../src/element_linear.cpp \
   ../src/interpolation_structure.cpp
 
-lib_cxxflags =
+lib_cxxflags = -fPIC
 lib_ldadd =
 
 # always link to built dependencies from ./externals

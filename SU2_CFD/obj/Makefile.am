@@ -48,8 +48,10 @@ if BUILD_REVERSE
 bin_PROGRAMS += ../bin/SU2_CFD_AD
 endif
 
+noinst_LIBRARIES= libSU2Core.a
+#lib_LTLIBRARIES=libSU2Core.la
 
-su2_cfd_sources = \
+libSU2Core_sources = \
   ../include/definition_structure.hpp \
   ../include/fluid_model.hpp \
   ../include/fluid_model.inl \
@@ -113,7 +115,6 @@ su2_cfd_sources = \
   ../src/solver_template.cpp \
   ../src/transfer_physics.cpp \
   ../src/transfer_structure.cpp \
-  ../src/SU2_CFD.cpp \
   ../src/transport_model.cpp \
   ../src/variable_adjoint_levelset.cpp \
   ../src/variable_adjoint_mean.cpp \
@@ -129,12 +130,37 @@ su2_cfd_sources = \
   ../src/variable_structure.cpp \
   ../src/variable_template.cpp
 
+su2_cfd_sources = \
+  ../include/SU2_CFD.hpp \
+  ../src/SU2_CFD.cpp
+
+libSU2Core_cxx_flags = -fPIC
+libSU2Core_libadd = \
+  ../../Common/src/libSU2_a-ad_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-config_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-dual_grid_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-element_linear.$(OBJEXT) \
+  ../../Common/src/libSU2_a-element_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-grid_adaptation_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-grid_movement_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-interpolation_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-linear_solvers_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-linear_solvers_structure_b.$(OBJEXT) \
+  ../../Common/src/libSU2_a-matrix_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-vector_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-gauss_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-geometry_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-mpi_structure.$(OBJEXT) \
+  ../../Common/src/libSU2_a-primal_grid_structure.$(OBJEXT)
+
 su2_cfd_cxx_flags =
 su2_cfd_ldadd =
 
 # always link to built dependencies from ./externals
 su2_cfd_cxx_flags += @su2_externals_INCLUDES@
 su2_cfd_ldadd += @su2_externals_LIBS@
+libSU2Core_cxx_flags += @su2_externals_INCLUDES@
+libSU2Core_libadd += @su2_externals_LIBS@
 
 # if BUILD_CGNS
 su2_cfd_cxx_flags += @CGNS_CXX@
@@ -166,10 +192,14 @@ su2_cfd_cxx_flags += @ZLIB_CXX@
 su2_cfd_ldadd += @ZLIB_LD@
 # endif
 
+libSU2Core_a_SOURCES = $(libSU2Core_sources)
+libSU2Core_a_CXXFLAGS = $(libSU2Core_cxx_flags)
+libSU2Core_a_LIBADD = $(libSU2Core_libadd)
+
 if BUILD_NORMAL
 ___bin_SU2_CFD_SOURCES = $(su2_cfd_sources)
 ___bin_SU2_CFD_CXXFLAGS = ${su2_cfd_cxx_flags}
-___bin_SU2_CFD_LDADD = ../../Common/lib/libSU2.a ${su2_cfd_ldadd}
+___bin_SU2_CFD_LDADD = libSU2Core.a ${su2_cfd_ldadd}
 endif
 
 if BUILD_DIRECTDIFF

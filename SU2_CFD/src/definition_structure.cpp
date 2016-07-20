@@ -187,57 +187,6 @@ unsigned short GetnDim(string val_mesh_filename, unsigned short val_format) {
   return (unsigned short) nDim;
 }
 
-void Driver_Preprocessing(CDriver **driver,
-                          CConfig *config,
-                          char* config_file_name,
-                          unsigned short val_nZone,
-                          unsigned short val_nDim,
-                          bool fsi) {
-
-  int rank = MASTER_NODE;
-#ifdef HAVE_MPI
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-#endif
-
-  /*--- fsi implementations will use, as of now, BGS implentation. More to come. ---*/
-  //bool fsi = config_container[ZONE_0]->GetFSI_Simulation();
-
-  if (val_nZone == SINGLE_ZONE) {
-
-    /*--- Single zone problem: instantiate the single zone driver class. ---*/
-    if (rank == MASTER_NODE) cout << "Instantiating a single zone driver for the problem. " << endl;
-
-    *driver = new CSingleZoneDriver(config_file_name, val_nZone, val_nDim);
-
-  } else if (config->GetUnsteady_Simulation() == TIME_SPECTRAL) {
-
-    /*--- Use the spectral method driver. ---*/
-
-    if (rank == MASTER_NODE) cout << "Instantiating a spectral method driver for the problem. " << endl;
-    *driver = new CSpectralDriver(config_file_name, val_nZone, val_nDim);
-
-  } else if ((val_nZone == 2) && fsi) {
-
-	    /*--- FSI problem: instantiate the FSI driver class. ---*/
-
-	 if (rank == MASTER_NODE) cout << "Instantiating a Fluid-Structure Interaction driver for the problem. " << endl;
-	 *driver = new CFSIDriver(config_file_name, val_nZone, val_nDim);
-
-  } else {
-
-    /*--- Multi-zone problem: instantiate the multi-zone driver class by default
-     or a specialized driver class for a particular multi-physics problem. ---*/
-
-    if (rank == MASTER_NODE) cout << "Instantiating a multi-zone driver for the problem. " << endl;
-    *driver = new CMultiZoneDriver(config_file_name, val_nZone, val_nDim);
-
-    /*--- Future multi-zone drivers instatiated here. ---*/
-
-  }
-
-}
-
-
 void Partition_Analysis(CGeometry *geometry, CConfig *config) {
 
   /*--- This routine does a quick and dirty output of the total

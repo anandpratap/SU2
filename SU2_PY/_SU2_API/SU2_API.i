@@ -15,5 +15,8 @@ threads="1"
 
 // ----------- USED MODULES ------------
 %include "std_string.i"
+%include "typemaps.i"
+%include "numpy.i"
+%numpy_typemaps(su2double, NPY_CDOUBLE, int)
 // ----------- API CLASSES ----------------
 %include "../../SU2_CFD/include/driver_structure.hpp"
