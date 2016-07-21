@@ -34,22 +34,16 @@
 
 SU2_DIR = ${abs_top_srcdir}
 CURRENT_DIR = ${SU2_DIR}/SU2_PY/_SU2_API
-CXX = mpicxx
-RM = rm -f
 
 SO_EXT=so
 
 SWIG_SRC = ${CURRENT_DIR}/SU2_API.i
-
 SWIG_WRAP_REAL = SU2_APIPYTHON_wrap
-
 SWIG_SO_REAL = _SU2Solver.${SO_EXT}
 
-PYTHON_INCLUDE = -I/usr/include/python2.7 -I/usr/include/python2.7
-
-NUMPY_DIR = /usr/lib/python2.7/dist-packages/numpy/core/include
-
-#MPI4PY_DIR = /usr/lib/python2.7/dist-packages/mpi4py/include
+PYTHON_INCLUDE = -I/usr/include/python2.7
+NUMPY_INCLUDE = /usr/lib/python2.7/dist-packages/numpy/core/include
+#MPI4PY_INCLUDE = /usr/lib/python2.7/dist-packages/mpi4py/include
 
 SWIG = swig
 
@@ -63,8 +57,8 @@ pySU2_INCLUDE = -I${SU2_DIR}/Common/include \
 	-I${SU2_DIR}/SU2_SOL/include
 
 
-#PY_INCLUDE = ${PYTHON_INCLUDE} -I${NUMPY_DIR} -I${MPI4PY_DIR}
-PY_INCLUDE = ${PYTHON_INCLUDE} -I${NUMPY_DIR}
+#PY_INCLUDE = ${PYTHON_INCLUDE} -I${NUMPY_INCLUDE} -I${MPI4PY_INCLUDE}
+PY_INCLUDE = ${PYTHON_INCLUDE} -I${NUMPY_INCLUDE}
 SWIG_INCLUDE = -I${SU2_DIR}/SU2_CFD/include \
 		-I${SU2_DIR}/Common/include
 
@@ -79,15 +73,15 @@ real: ${SWIG_SO_REAL}
 
 EXTRA_CC_FLAGS = -fPIC -O3
 
-METIS_INCLUDE = -I${SU2_DIR}/externals/metis/include 
-METIS_LIB = ${SU2_DIR}/externals/metis/libmetis.a
-
-PARMETIS_INCLUDE = -I${SU2_DIR}/externals/parmetis/include 
-PARMETIS_LIB = ${SU2_DIR}/externals/parmetis/libparmetis.a
-
+#External includes
+METIS_INCLUDE = -I${SU2_DIR}/externals/metis/include
+PARMETIS_INCLUDE = -I${SU2_DIR}/externals/parmetis/include
 TECIO_INCLUDE = -I${SU2_DIR}/externals/tecio/include
+
+#External libraries (METIS_LIB and PARMETIS_LIB are already defined)
 TECIO_LIB = ${SU2_DIR}/externals/tecio/libtecio.a
 
+#SU2Core lib
 SU2SOLVER_LIB = ${SU2_DIR}/SU2_CFD/obj/libSU2Core.a
 
 # Set the linking flags to use
