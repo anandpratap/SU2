@@ -82,7 +82,8 @@ TECIO_INCLUDE = -I${SU2_DIR}/externals/tecio/include
 TECIO_LIB = ${SU2_DIR}/externals/tecio/libtecio.a
 
 #SU2Core lib
-SU2SOLVER_LIB = ${SU2_DIR}/SU2_CFD/obj/libSU2Core.a
+SU2SOLVER_LIB = ${SU2_DIR}/SU2_CFD/obj/libSU2Core.a \
+		${SU2_DIR}/Common/lib/libSU2.a
 
 # Set the linking flags to use
 pySU2_LD_FLAGS = ${SU2SOLVER_LIB} ${TECIO_LIB} ${PARMETIS_LIB} ${METIS_LIB}
@@ -93,7 +94,7 @@ pySU2_CC_FLAGS = ${EXTRA_CC_FLAGS} ${METIS_INCLUDE} ${PARMETIS_INCLUDE} ${TECIO_
 SO_LINK_FLAGS= -fPIC -shared 
 
 # Default rule for creating the _wrap.cxx file from the .i file
-${SWIG_WRAP_REAL}.cxx: ${SWIG_SRC}
+${SWIG_WRAP_REAL}.cxx: ${SU2SOLVER_LIB} ${SWIG_SRC}
 	${SWIG} ${TACS_DEF} -Wall ${SWIG_INCLUDE} -outdir ./ -o ${SWIG_WRAP_REAL}.cxx -c++ -python ${SWIG_SRC} 
 
 #Default rule for compiling the .o files

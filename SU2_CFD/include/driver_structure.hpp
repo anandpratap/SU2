@@ -277,26 +277,26 @@ public:
   virtual void SetInitialMesh() { };
 
   /*--- External communication layer ---*/
-  double Get_Drag();
-  double Get_Lift();
-  double Get_Mz();
+  su2double Get_Drag();
+  su2double Get_Lift();
+  su2double Get_Mz();
   unsigned short GetMovingMarker();
   unsigned long GetNumberVertices(unsigned short iMarker);
   unsigned int GetVertexGlobalIndex(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexCoordX(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexCoordY(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexCoordZ(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexCoordX(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexCoordY(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexCoordZ(unsigned short iMarker, unsigned short iVertex);
   bool ComputeVertexForces(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexForceX(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexForceY(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexForceZ(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexForceDensityX(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexForceDensityY(unsigned short iMarker, unsigned short iVertex);
-  double GetVertexForceDensityZ(unsigned short iMarker, unsigned short iVertex);
-  void SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, double newPosX);
-  void SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, double newPosY);
-  void SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, double newPosZ);
-  double SetVertexVarCoord(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexForceX(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexForceY(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexForceZ(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexForceDensityX(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexForceDensityY(unsigned short iMarker, unsigned short iVertex);
+  su2double GetVertexForceDensityZ(unsigned short iMarker, unsigned short iVertex);
+  void SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, su2double newPosX);
+  void SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, su2double newPosY);
+  void SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, su2double newPosZ);
+  su2double SetVertexVarCoord(unsigned short iMarker, unsigned short iVertex);
 
 };
 

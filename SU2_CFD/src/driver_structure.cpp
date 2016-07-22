@@ -2521,7 +2521,7 @@ void CDriver::Output(){
 
 CDriver::~CDriver(void) {}
 
-double CDriver::Get_Drag(){
+su2double CDriver::Get_Drag(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
@@ -2542,7 +2542,7 @@ double CDriver::Get_Drag(){
   return CDrag*factor;
 }
 
-double CDriver::Get_Lift(){
+su2double CDriver::Get_Lift(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
@@ -2563,7 +2563,7 @@ double CDriver::Get_Lift(){
   return CLift*factor;
 }
 
-double CDriver::Get_Mz(){
+su2double CDriver::Get_Mz(){
 
   unsigned short val_iZone = ZONE_0;
   unsigned short FinestMesh = config_container[val_iZone]->GetFinestMesh();
@@ -2644,7 +2644,7 @@ unsigned int CDriver::GetVertexGlobalIndex(unsigned short iMarker, unsigned shor
 
 }
 
-double CDriver::GetVertexCoordX(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexCoordX(unsigned short iMarker, unsigned short iVertex){
 
   su2double* Coord;
   unsigned long iPoint;
@@ -2655,7 +2655,7 @@ double CDriver::GetVertexCoordX(unsigned short iMarker, unsigned short iVertex){
 
 }
 
-double CDriver::GetVertexCoordY(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexCoordY(unsigned short iMarker, unsigned short iVertex){
 
   su2double* Coord;
   unsigned long iPoint;
@@ -2665,7 +2665,7 @@ double CDriver::GetVertexCoordY(unsigned short iMarker, unsigned short iVertex){
   return Coord[1];
 }
 
-double CDriver::GetVertexCoordZ(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexCoordZ(unsigned short iMarker, unsigned short iVertex){
 
   su2double* Coord;
   unsigned long iPoint;
@@ -2791,37 +2791,37 @@ bool CDriver::ComputeVertexForces(unsigned short iMarker, unsigned short iVertex
 
 }
 
-double CDriver::GetVertexForceX(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexForceX(unsigned short iMarker, unsigned short iVertex){
 
     return APINodalForce[0];
 
 }
 
-double CDriver::GetVertexForceY(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexForceY(unsigned short iMarker, unsigned short iVertex){
 
     return APINodalForce[1];
 
 }
 
-double CDriver::GetVertexForceZ(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexForceZ(unsigned short iMarker, unsigned short iVertex){
 
     return APINodalForce[2];
 
 }
 
-double CDriver::GetVertexForceDensityX(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexForceDensityX(unsigned short iMarker, unsigned short iVertex){
     return APINodalForceDensity[0];
 }
 
-double CDriver::GetVertexForceDensityY(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexForceDensityY(unsigned short iMarker, unsigned short iVertex){
     return APINodalForceDensity[1];
 }
 
-double CDriver::GetVertexForceDensityZ(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::GetVertexForceDensityZ(unsigned short iMarker, unsigned short iVertex){
     return APINodalForceDensity[2];
 }
 
-void CDriver::SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, double newPosX){
+void CDriver::SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, su2double newPosX){
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
@@ -2841,11 +2841,11 @@ void CDriver::SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, do
 
 }
 
-void CDriver::SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, double newPosY){
+void CDriver::SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, su2double newPosY){
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
-  double dispY;
+  su2double dispY;
 
   iPoint = geometry_container[ZONE_0][MESH_0]->vertex[iMarker][iVertex]->GetNode();
   Coord = geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetCoord();
@@ -2860,11 +2860,11 @@ void CDriver::SetVertexCoordY(unsigned short iMarker, unsigned short iVertex, do
   }
 }
 
-void CDriver::SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, double newPosZ){
+void CDriver::SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, su2double newPosZ){
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
-  double dispZ;
+  su2double dispZ;
 
   iPoint = geometry_container[ZONE_0][MESH_0]->vertex[iMarker][iVertex]->GetNode();
   Coord = geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetCoord();
@@ -2884,9 +2884,9 @@ void CDriver::SetVertexCoordZ(unsigned short iMarker, unsigned short iVertex, do
   }
 }
 
-double CDriver::SetVertexVarCoord(unsigned short iMarker, unsigned short iVertex){
+su2double CDriver::SetVertexVarCoord(unsigned short iMarker, unsigned short iVertex){
 
-    double nodalVarCoordNorm;
+    su2double nodalVarCoordNorm;
 
     geometry_container[ZONE_0][MESH_0]->vertex[iMarker][iVertex]->SetVarCoord(APIVarCoord);
     nodalVarCoordNorm = sqrt((APIVarCoord[0])*(APIVarCoord[0]) + (APIVarCoord[1])*(APIVarCoord[1]) + (APIVarCoord[2])*(APIVarCoord[2]));

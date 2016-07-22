@@ -17,6 +17,6 @@ threads="1"
 %include "std_string.i"
 %include "typemaps.i"
 %include "numpy.i"
-%numpy_typemaps(su2double, NPY_CDOUBLE, int)
 // ----------- API CLASSES ----------------
 %include "../../SU2_CFD/include/driver_structure.hpp"
+%include "../../Common/include/datatypes/primitive_structure.hpp"
