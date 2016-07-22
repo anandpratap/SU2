@@ -2825,7 +2825,7 @@ void CDriver::SetVertexCoordX(unsigned short iMarker, unsigned short iVertex, su
 
   unsigned long iPoint;
   su2double *Coord, *Coord_n;
-  double dispX;
+  su2double dispX;
 
   iPoint = geometry_container[ZONE_0][MESH_0]->vertex[iMarker][iVertex]->GetNode();
   Coord = geometry_container[ZONE_0][MESH_0]->node[iPoint]->GetCoord();
