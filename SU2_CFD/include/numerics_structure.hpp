@@ -1198,7 +1198,6 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   virtual void ComputeResidual(su2double *val_residual, CConfig *config);
-  
   /*!
    * \overload
    * \param[out] val_residual_i - Pointer to the total residual at point i.
@@ -1211,6 +1210,8 @@ public:
                                        su2double **val_Jacobian_j, CConfig *config,
                                        su2double &gamma_sep) ;
   
+  virtual void ComputeProduction(su2double *val_production, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config);
+
   /*!
    * \overload
    * \param[out] val_residual_i - Pointer to the total residual at point i.
@@ -4233,7 +4234,8 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config);
-  
+	void ComputeProduction(su2double *val_production, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config);
+
   /*!
    * \brief Residual for source term integration.
    * \param[in] intermittency_in - Value of the intermittency.

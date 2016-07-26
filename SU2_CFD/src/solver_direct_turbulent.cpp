@@ -44,7 +44,6 @@ CTurbSolver::CTurbSolver(CConfig *config) : CSolver() {
   
   Gamma = config->GetGamma();
   Gamma_Minus_One = Gamma - 1.0;
-  
   FlowPrimVar_i = NULL;
   FlowPrimVar_j = NULL;
   lowerlimit    = NULL;
@@ -1134,6 +1133,10 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
   node = new CVariable*[nPoint];
   
   /*--- Single grid simulation ---*/
+
+  //int nPoint = geometry->node[iPoint]->GetnPoint();
+
+
   
   if (iMesh == MESH_0 || config->GetMGCycle() == FULLMG_CYCLE) {
     
@@ -1291,7 +1294,9 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
       cout << "There is no turbulent restart file!!" << endl;
       exit(EXIT_FAILURE);
     }
-    
+
+  
+
     /*--- In case this is a parallel simulation, we need to perform the
      Global2Local index transformation first. ---*/
     long *Global2Local;
@@ -1377,15 +1382,46 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
      at any halo/periodic nodes. The initial solution can be arbitrary,
      because a send/recv is performed immediately in the solver. ---*/
     for (iPoint = nPointDomain; iPoint < nPoint; iPoint++) {
-      node[iPoint] = new CTurbSAVariable(Solution[0], muT_Inf, nDim, nVar, config);
+		node[iPoint] = new CTurbSAVariable(Solution[0], muT_Inf, nDim, nVar, config);
     }
     
     /*--- Close the restart file ---*/
     restart_file.close();
-    
+
+
+
+
     /*--- Free memory needed for the transformation ---*/
     delete [] Global2Local;
   }
+
+
+  FILE *fp;
+  int idx;
+  double beta;
+  su2double beta1;
+  int total_n;
+  fp=fopen("beta.dat", "rt");
+  std::cout<<"Reading beta from file....." <<std::endl;
+  
+  fscanf(fp, "%d", &total_n);
+  assert(total_n == geometry->GetGlobal_nPointDomain());
+  std::cout<<"Total N "<<total_n<<std::endl;
+  for (unsigned int jPoint = 0; jPoint < 14576; jPoint++){
+	  fscanf(fp, "%d %lf", &idx, &beta);
+	  //std::cout<<"idx: "<<idx<<" beta: "<<beta<<std::endl;
+	  for (unsigned int iPoint = 0; iPoint < nPoint; iPoint++){
+		  if(geometry->node[iPoint]->GetGlobalIndex() == jPoint){
+			  beta1 = beta;
+			  CTurbSAVariable *tmp_node = (CTurbSAVariable*)node[iPoint];
+			  tmp_node->Setbeta(beta1);
+			  //	  std::cout<<"set_beta: "<<tmp_node->Getbeta()<<std::endl;
+			  
+		  }
+	  }
+  }
+  fclose(fp);
+
   
   /*--- MPI solution ---*/
   Set_MPI_Solution(geometry, config);
@@ -1517,7 +1553,18 @@ void CTurbSASolver::Source_Residual(CGeometry *geometry, CSolver **solver_contai
     /*--- Compute the source term ---*/
     
     numerics->ComputeResidual(Residual, Jacobian_i, NULL, config);
-    
+	su2double production_tmp, beta_tmp;
+	numerics->ComputeProduction(&production_tmp, Jacobian_i, NULL, config);
+	CTurbSAVariable *variable_tmp = (CTurbSAVariable *) (node[iPoint]);
+	beta_tmp = variable_tmp->Getbeta();
+	
+	if(fabs(production_tmp) > 1e-4){
+		//std::cout<<"production_tmp: "<<production_tmp<<std::endl;
+		//std::cout<<"beta_tmp: "<<beta_tmp<<std::endl;
+	}
+	variable_tmp->Setproduction(production_tmp);
+	Residual[0] += (beta_tmp - 1.0)*production_tmp*geometry->node[iPoint]->GetVolume();
+
     /*--- Don't add source term in the interface or air ---*/
     
     if (freesurface) {

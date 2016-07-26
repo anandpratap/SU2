@@ -463,12 +463,31 @@ int main(int argc, char *argv[]) {
             solver_container[ZONE_0][MESH_0][config_container[ZONE_0]->GetContainerPosition(RUNTIME_FLOW_SYS)]->Preprocessing(geometry_container[ZONE_0][MESH_0], solver_container[ZONE_0][MESH_0], config_container[ZONE_0], MESH_0, 0, RUNTIME_FLOW_SYS, true);
           }
 
-
+		  
           if (rank == MASTER_NODE) cout << endl << "-------------------------- File Output Summary --------------------------";
-          
+          FILE *fp;
+		  fp = fopen("inversion_framework_variables.dat", "w");
+		  fprintf(fp, "pointid\tbeta\tproduction\n");
+		  /*--- write beta and production ---*/
+		  for (int iPoint = 0; iPoint < geometry_container[ZONE_0][MESH_0]->GetGlobal_nPointDomain(); iPoint++) {
+			  /*--- Index of the point ---*/
+			  //std::cout<<"ipoint_tmp: "<<iPoint<<std::endl;
+			  
+			  //for (int iPoint = 0; iPoint < 14576 ; iPoint++) {
+				  su2double beta_tmp, production_tmp;
+				  CTurbSAVariable *variable_tmp = (CTurbSAVariable *) (solver_container[ZONE_0][MESH_0][TURB_SOL]->node[iPoint]);
+				  beta_tmp = variable_tmp->Getbeta();
+				  production_tmp = variable_tmp->Getproduction();
+				  //std::cout<<"beta_tmp: "<<beta_tmp<<std::endl;
+				  //std::cout<<"production_tmp: "<<production_tmp<<std::endl;
+				  fprintf(fp, "%d\t%.14e\t%.14e\n", iPoint, SU2_TYPE::GetValue(beta_tmp), SU2_TYPE::GetValue(production_tmp));
+				  //}
+		  }
+		  fclose(fp);
           /*--- Execute the routine for writing restart, volume solution,
            surface solution, and surface comma-separated value files. ---*/
           
+		  
           output->SetResult_Files(solver_container, geometry_container, config_container, ExtIter, nZone);
           
           /*--- Output a file with the forces breakdown. ---*/

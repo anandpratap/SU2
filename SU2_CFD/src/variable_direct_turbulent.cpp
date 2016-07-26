@@ -59,7 +59,7 @@ CTurbVariable::CTurbVariable(unsigned short val_nDim, unsigned short val_nvar, C
   
   Limiter = new su2double [nVar];
   for (iVar = 0; iVar < nVar; iVar++)
-    Limiter[iVar] = 0.0;
+	  Limiter[iVar] = 0.0;
   
   Solution_Max = new su2double [nVar];
   Solution_Min = new su2double [nVar];
@@ -75,13 +75,17 @@ CTurbVariable::~CTurbVariable(void) { }
 su2double CTurbVariable::GetmuT() { return muT; }
 
 void CTurbVariable::SetmuT(su2double val_muT) { muT = val_muT; }
+su2double CTurbVariable::Getbeta() { return beta; }
+su2double CTurbVariable::Getproduction() { return auxiliary_production; }
+void CTurbVariable::Setbeta(su2double val_beta) { beta = val_beta; }
+void CTurbVariable::Setproduction(su2double val_production) { auxiliary_production = val_production; }
+
 
 CTurbSAVariable::CTurbSAVariable(void) : CTurbVariable() { }
 
 CTurbSAVariable::CTurbSAVariable(su2double val_nu_tilde, su2double val_muT, unsigned short val_nDim, unsigned short val_nvar, CConfig *config)
 : CTurbVariable(val_nDim, val_nvar, config) {
-  
-  bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
+	bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
   
 	/*--- Initialization of S-A variables ---*/
@@ -89,7 +93,8 @@ CTurbSAVariable::CTurbSAVariable(su2double val_nu_tilde, su2double val_muT, unsi
   
 	/*--- Initialization of the eddy viscosity ---*/
 	muT = val_muT;
-  
+	beta = -10.0;
+	auxiliary_production = 0.0;
 	/*--- Allocate and initialize solution for the dual time strategy ---*/
 	if (dual_time) {
 		Solution_time_n[0]  = val_nu_tilde;
@@ -103,6 +108,8 @@ CTurbSAVariable::~CTurbSAVariable(void) {
   if (TS_Source != NULL) delete [] TS_Source;
   
 }
+
+
 
 CTurbMLVariable::CTurbMLVariable(void) : CTurbVariable() { }
 

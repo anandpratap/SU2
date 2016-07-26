@@ -1746,6 +1746,7 @@ public:
 	 * \param[in] val_muT
 	 */
 	virtual void SetmuT(su2double val_muT);
+	//	virtual void Setbeta(su2double val_beta);
 
 	/*!
 	 * \brief Add a value to the maximum eigenvalue for the inviscid terms of the PDE.
@@ -3421,7 +3422,8 @@ class CTurbVariable : public CVariable {
 protected:
 	su2double muT;                /*!< \brief Eddy viscosity. */
 	su2double *TS_Source; 	       /*!< \brief Time spectral source term. */
-
+	su2double beta;
+	su2double auxiliary_production;
 public:
 	/*!
 	 * \brief Constructor of the class. 
@@ -3446,12 +3448,16 @@ public:
 	 * \return the value of the eddy viscosity.
 	 */
 	su2double GetmuT();
+	su2double Getbeta();
+	su2double Getproduction();
 
 	/*!
 	 * \brief Set the value of the eddy viscosity.
 	 * \param[in] val_muT - Value of the eddy viscosity.
 	 */
 	void SetmuT(su2double val_muT);
+	void Setbeta(su2double val_beta);
+	void Setproduction(su2double val_production);
 };
 
 /*!

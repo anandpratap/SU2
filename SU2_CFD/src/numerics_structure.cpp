@@ -2775,3 +2775,6 @@ void CNumerics::CreateBasis(su2double *val_Normal) {
 CSourceNothing::CSourceNothing(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) { }
 
 CSourceNothing::~CSourceNothing(void) { }
+
+void CNumerics::ComputeProduction(su2double *val_production, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {}
+  

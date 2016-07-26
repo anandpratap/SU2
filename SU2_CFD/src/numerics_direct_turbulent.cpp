@@ -581,7 +581,10 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
 //    Production = cb1*(1.0-ft2)*Shat*TurbVar_i[0]*Volume;
     
     Production = cb1*Shat*TurbVar_i[0]*Volume;
-
+	if(fabs(Production) > 1e-6){
+		//std::cout<<"production_SA: "<<Production<<std::endl;
+	}	
+	
     /*--- Destruction term ---*/
     
     r = min(TurbVar_i[0]*inv_Shat*inv_k2_d2,10.0);
@@ -621,6 +624,67 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
     dfw = dg*glim*(1.-g_6/(g_6+cw3_6));
     val_Jacobian_i[0][0] -= cw1*(dfw*TurbVar_i[0] +	2.0*fw)*TurbVar_i[0]/dist_i_2*Volume;
     
+  }
+
+//  AD::SetPreaccOut(val_residual[0]);
+//  AD::EndPreacc();
+  
+}
+
+
+void CSourcePieceWise_TurbSA::ComputeProduction(su2double *val_production, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
+  
+//  AD::StartPreacc();
+//  AD::SetPreaccIn(V_i, nDim+6);
+//  AD::SetPreaccIn(Vorticity_i, nDim);
+//  AD::SetPreaccIn(StrainMag_i);
+//  AD::SetPreaccIn(TurbVar_i[0]);
+//  AD::SetPreaccIn(TurbVar_Grad_i[0], nDim);
+//  AD::SetPreaccIn(Volume); AD::SetPreaccIn(dist_i);
+
+  // if (incompressible) {
+  //   Density_i = V_i[nDim+1];
+  //   Laminar_Viscosity_i = V_i[nDim+3];
+  // }
+  // else {
+  //   Density_i = V_i[nDim+2];
+  //   Laminar_Viscosity_i = V_i[nDim+5];
+  // }
+  
+  /*--- Evaluate Omega ---*/
+  
+  // Omega = sqrt(Vorticity_i[0]*Vorticity_i[0] + Vorticity_i[1]*Vorticity_i[1] + Vorticity_i[2]*Vorticity_i[2]);
+  
+  /*--- Rotational correction term ---*/
+  
+  // if (rotating_frame) { Omega += 2.0*min(0.0, StrainMag_i-Omega); }
+	*val_production = 0.0;
+  if (dist_i > 1e-10) {
+    
+    /*--- Production term ---*/
+    
+    // dist_i_2 = dist_i*dist_i;
+    // nu = Laminar_Viscosity_i/Density_i;
+    // Ji = TurbVar_i[0]/nu;
+    // Ji_2 = Ji*Ji;
+    // Ji_3 = Ji_2*Ji;
+    // fv1 = Ji_3/(Ji_3+cv1_3);
+    // fv2 = 1.0 - Ji/(1.0+Ji*fv1);
+    // ft2 = ct3*exp(-ct4*Ji_2);
+    // S = Omega;
+    // inv_k2_d2 = 1.0/(k2*dist_i_2);
+    
+    // Shat = S + TurbVar_i[0]*fv2*inv_k2_d2;
+    // Shat = max(Shat, 1.0e-10);
+    // inv_Shat = 1.0/Shat;
+    
+    /*--- Production term ---*/;
+
+//    Original SA model
+//    Production = cb1*(1.0-ft2)*Shat*TurbVar_i[0]*Volume;
+    
+	  *val_production = cb1*Shat*TurbVar_i[0];
+	  
   }
 
 //  AD::SetPreaccOut(val_residual[0]);
